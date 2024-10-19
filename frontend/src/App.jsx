@@ -6,6 +6,7 @@ import './App.css'; // Import the CSS for styling
 // Connect to the backend on Render
 const socket = io('https://chatgpttroll-1.onrender.com');
 
+
 const Chat = ({ isResponder }) => {
     const [chat, setChat] = useState([]);
     const chatEndRef = useRef(null);
