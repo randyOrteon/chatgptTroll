@@ -7,14 +7,14 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server, {
     cors: {
-        origin: "http://localhost:3000", // Update this to your frontend URL
+        origin: "https://your-frontend-url.vercel.app", // Replace with your Vercel frontend URL
         methods: ["GET", "POST"]
     }
 });
 
 app.use(cors());
 
-const PORT = 4000;
+const PORT = process.env.PORT || 4000; // Use dynamic port for hosting services like Render
 
 // Store the chat messages (for simplicity)
 let chatMessages = [];
