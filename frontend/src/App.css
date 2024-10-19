@@ -1,108 +1,170 @@
-body {
+/* Reset default styles */
+* {
   margin: 0;
-  background-color: #1e1e1e; /* Dark background */
-  color: #f0f0f0; /* Light text color */
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Fullscreen Dark Mode Layout */
+html, body {
+  height: 100%;
   font-family: 'Arial', sans-serif;
+  background-color: #212121; /* Main background color */
+  color: #e0e0e0; /* Light text color */
 }
 
+/* Container holding the chat and input */
 .app-container {
+  width: 100%;
+  height: 100vh; /* Take full height of viewport */
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  height: 100vh;
+}
+
+/* Top space */
+.top-space {
   padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: fixed; /* Fix the top space to the top of the viewport */
+  top: 0; /* Align it to the top */
+  left: 0; /* Align it to the left */
+  right: 0; /* Align it to the right */
+  background-color: #212121; /* Match background to avoid transparency issues */
+  z-index: 10; /* Ensure it's above other content */
 }
 
-.header {
+/* Chat wrapper */
+.chat-wrapper {
+  flex: 1; /* Take up remaining space */
+  display: flex;
+  justify-content: center; /* Center the chat container */
+  margin-top: 80px; /* Add margin to prevent overlap with fixed top space */
+}
+
+/* Chat container */
+.chat-container {
+  width: 100%; /* Take full width of the wrapper */
+  max-width: 800px; /* Limit the width for better readability */
+  height: calc(100% - 80px); /* Adjust height to fill the remaining space */
   display: flex;
   flex-direction: column;
-  align-items: center;
-  margin-bottom: 20px;
+  padding: 0 20px; /* Add left and right padding */
 }
 
-.title {
-  font-size: 2rem;
-  margin-bottom: 10px;
-}
-
-.toggle-button {
-  padding: 10px 15px;
-  background-color: #444; /* Dark grey button */
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.3s ease; /* Smooth transition */
-}
-
-.toggle-button:hover {
-  background-color: #555; /* Slightly lighter grey on hover */
-}
-
+/* Chat history section */
 .chat-box {
-  width: 100%;
-  max-width: 600px;
-  height: 400px;
-  border: 1px solid #444; /* Darker border */
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 20px;
+  flex: 1;
+  padding: 20px;
   overflow-y: auto;
-  background-color: #2c2c2c; /* Dark chat background */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); /* Darker shadow */
+  background-color: #212121; /* Match with the background */
+  border-radius: 8px;
 }
 
+/* Chat message styling */
 .chat-message {
-  margin: 10px 0;
-  padding: 8px;
-  border-radius: 5px;
-  max-width: 75%;
-}
-
-.asker {
-  background-color: #3e3e3e; /* Dark grey for user messages */
-  align-self: flex-start;
-}
-
-.responder {
-  background-color: #0078d4; /* Bright blue for responder messages */
-  color: white;
-  align-self: flex-end;
-}
-
-.chat-form {
+  margin-bottom: 20px;
   display: flex;
-  width: 100%;
-  max-width: 600px;
 }
 
-.chat-input {
+/* User message styling */
+.asker {
+  align-self: flex-end; /* Align user messages to the right */
+}
+
+/* Responder message styling */
+.responder {
+  align-self: flex-start; /* Align responder messages to the left */
+}
+
+/* Common message styling */
+.message-content {
+  padding: 12px 16px;
+  border-radius: 20px; /* More rounded edges for the bubbles */
+  max-width: 75%; /* Adjust bubble width */
+  word-wrap: break-word;
+}
+
+/* User message bubble styling */
+.asker .message-content {
+  background-color: #2f2f2f; /* User's message bubble color */
+  color: #fff;
+  margin-left: auto; /* Move to the right */
+}
+
+/* Responder message bubble styling */
+.responder .message-content {
+  background-color: transparent; /* No background for responder messages */
+  color: #fff;
+  margin-right: auto; /* Move to the left */
+  border: none; /* Ensure no borders */
+}
+
+/* Bottom space */
+/* Other CSS remains unchanged */
+
+/* Bottom space */
+.bottom-space {
+  position: fixed; /* Keep it fixed at the bottom */
+  left: 0; /* Align it to the left */
+  right: 0; /* Align it to the right */
+  bottom: 0; /* Align it to the bottom */
+  background-color: #212121; /* Match background color */
+  padding: 10px 20px; /* Add padding to the top and bottom, and left and right */
+  display: flex; /* Use flexbox to center content */
+  flex-direction: column; /* Stack items vertically */
+  align-items: center; /* Center items horizontally */
+}
+
+/* Input area styling */
+.input-area {
+  display: flex;
+  align-items: center;
+  padding: 5px; /* Slightly reduce padding to keep it compact */
+  border-radius: 8px; /* Add rounded edges */
+  background-color: #2f2f2f; /* Match the input background color */
+  width: 80%; /* Set width to 80% of the parent container */
+  max-width: 600px; /* Optional: set a maximum width */
+}
+
+/* Other CSS remains unchanged */
+
+
+/* Adjust input field styling */
+.input-area input {
   flex-grow: 1;
-  padding: 12px;
-  border: 1px solid #444; /* Dark border */
-  border-radius: 5px;
-  font-size: 1rem;
-  background-color: #3c3c3c; /* Darker input field */
-  color: #f0f0f0; /* Light text for input */
-}
-
-.chat-button {
-  padding: 12px 20px;
-  background-color: #444; /* Dark grey button */
-  color: white;
+  padding: 10px; /* Padding for the input field */
+  border-radius: 20px; /* Rounded input field */
   border: none;
-  border-radius: 5px;
+  background-color: #2f2f2f; /* Input field background */
+  color: #fff;
+  font-size: 16px;
+  outline: none;
+}
+
+/* Input button styling */
+.input-area button {
+  margin-left: 10px;
+  padding: 15px;
+  border: none;
+  border-radius: 20px; /* Rounded button */
+  font-weight: bold;
   cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.3s ease; /* Smooth transition */
+  transition: background-color 0.3s;
+  background-color: white; /* Button hover background */
+  color: #2f2f2f; /* Button hover text */
 }
 
-.chat-button:hover {
-  background-color: #555; /* Slightly lighter grey on hover */
+.input-area button:hover {
+  background-color: white; /* Button hover background */
+  color: #2f2f2f; /* Button hover text */
 }
 
-.role {
-  font-weight: bold; /* Bold for the role */
+/* Information message styling */
+.info-message {
+    text-align: center; /* Center the text */
+    color: #e0e0e0; /* Light text color */
+    margin-top: 5px; /* Add some space above the message */
+    font-size: 14px; /* Adjust font size as needed */
 }
