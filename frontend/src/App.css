@@ -29,23 +29,33 @@ html, body {
   text-align: left; /* Align text to the left */
   flex-grow: 1; /* Allow title to take up available space */
 }
+
+/* Share button with icon */
 .share-button {
   background-color: #212121; /* Share button color */
   color: white; /* Text color */
-  border:#b4b4b4;
-  border-style:solid;
-  border-width:1px;
-  
+  border: #b4b4b4;
+  border-style: solid;
+  border-width: 1px;
   border-radius: 20px; /* Rounded edges */
   padding: 8px 12px; /* Padding for button */
   cursor: pointer; /* Pointer cursor on hover */
   margin-left: 10px; /* Space between buttons */
+  display: flex; /* Flexbox for icon and text */
+  align-items: center;
   transition: background-color 0.3s; /* Smooth transition */
 }
 
 .share-button:hover {
-  background-color: #efefef; /* Darker shade on hover */
+  background-color: #efefef; /* Light background on hover */
   color: #212121;
+}
+
+/* SVG icon inside the share button */
+.share-button svg {
+  width: 16px; /* Set icon size */
+  height: 16px;
+  margin-right: 8px; /* Space between icon and text */
 }
 
 /* Account image styling */
@@ -56,8 +66,6 @@ html, body {
   margin-left: 10px; /* Space between the button and image */
   cursor: pointer; /* Pointer cursor on hover */
 }
-
-
 
 /* Top space */
 .top-space {
@@ -131,17 +139,29 @@ html, body {
   margin-left: auto; /* Move to the right */
 }
 
-/* Responder message bubble styling */
-.responder .message-content {
-  background-color: transparent; /* No background for responder messages */
-  color: #fff;
-  margin-right: auto; /* Move to the left */
-  border: none; /* Ensure no borders */
+/* Responder logo styling */
+.responder-logo {
+  width: 30px; /* Adjust width to fit your design */
+  height: 30px; /* Ensure it's square */
+  border-radius: 50%; /* Make it circular */
+  margin-right: 7px; /* Space between logo and message */
+  align-self: flex-start; /* Align logo to the top of the message */
+  background-color: #b4b4b4; /* Placeholder color for logo */
 }
 
-/* Bottom space */
-/* Other CSS remains unchanged */
+/* Responder message with logo alignment */
+.responder {
+  display: flex;
+  align-items: flex-start; /* Align items to the top */
+}
 
+/* Responder message content styling */
+.responder .message-content {
+  margin-right: auto; /* Move the message content to the left */
+  background-color: transparent; /* No background for responder messages */
+  color: #fff;
+  border: none; /* Ensure no borders */
+}
 /* Bottom space */
 .bottom-space {
   position: fixed; /* Keep it fixed at the bottom */
@@ -163,13 +183,11 @@ html, body {
   border-radius: 30px; /* Add rounded edges */
   background-color: #2f2f2f; /* Match the input background color */
   width: 80%; /* Set width to 80% of the parent container */
-  max-width: 600px; /* Optional: set a maximum width */
+  max-width: 700px; /* Optional: set a maximum width */
+  max-height: 50px;
 }
 
-/* Other CSS remains unchanged */
-
-
-/* Adjust input field styling */
+/* Input field styling */
 .input-area input {
   flex-grow: 1;
   padding: 10px; /* Padding for the input field */
@@ -184,25 +202,36 @@ html, body {
 /* Input button styling */
 .input-area button {
   margin-left: 10px;
-  padding: 15px;
   border: none;
   border-radius: 30px; /* Rounded button */
   font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.3s;
-  background-color: white; /* Button hover background */
-  color: #2f2f2f; /* Button hover text */
+  background-color: #2f2f2f; /* Button background */
+  color: #2f2f2f;
 }
 
+/* Button hover styling */
 .input-area button:hover {
-  background-color: white; /* Button hover background */
-  color: #2f2f2f; /* Button hover text */
+  color: #2f2f2f;
 }
 
 /* Information message styling */
 .info-message {
-    text-align: center; /* Center the text */
-    color: #e0e0e0; /* Light text color */
-    margin-top: 5px; /* Add some space above the message */
-    font-size: 14px; /* Adjust font size as needed */
+  text-align: center;
+  color: #e0e0e0; /* Light text color */
+  margin-top: 5px; /* Add some space above the message */
+  font-size: 14px; /* Adjust font size as needed */
+}
+
+/* Send icon */
+.send-icon {
+  width: 5vh;
+  height: 5vh;
+  margin-right: 5px;
+  margin-left: 10px;
+  margin-top: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+  background-color: white;
+  border-radius: 50%;
 }

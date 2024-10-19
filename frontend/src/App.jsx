@@ -38,6 +38,9 @@ const Chat = ({ isResponder }) => {
             <div className="chat-box">
                 {chat.map((msg, idx) => (
                     <div key={idx} className={`chat-message ${msg.role}`}>
+                        {msg.role === 'responder' && (
+                            <img src="public/gptlogog.jpg" alt="Responder Logo" className="responder-logo" />
+                        )}
                         <div className={`${msg.role} message-content`}>
                             {msg.message}
                         </div>
@@ -79,9 +82,9 @@ const App = () => {
                 <div className="top-space">
                     <h1 className="app-title">ChatGPT</h1> {/* Changed title to ChatGPT */}
                     <div className="header-buttons">
-                        <button className="share-button">Share</button> {/* Added Share button */}
-                        <img src="https://via.placeholder.com/30" alt="Account" className="account-image" /> {/* Dummy account image */}
+                    <button className="share-button">Share</button> {/* Added Share button */}
                     </div>
+                    <img src="public/accounthol.png" alt="Account" className="account-image" />
                 </div>
                 <div className="chat-wrapper"> {/* Wrapping the Routes in a new div */}
                     <Routes>
@@ -100,7 +103,7 @@ const App = () => {
                             placeholder="Ask a question or type your response..."
                             className="chat-input"
                         />
-                        <button type="submit" className="chat-button">Send</button>
+                        <button type="submit" className="chat-button"><img className="send-icon" src="/public/arrow3.svg" alt="" /></button>
                     </form>
                     <div style={{ marginTop: '10px', color: '#e0e0e0' }}>
                         ChatGPT can make mistakes. Check important info.
