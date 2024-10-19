@@ -3,7 +3,7 @@ import { io } from 'socket.io-client';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import './App.css'; // Import the CSS for styling
 
-const socket = io('http://localhost:4000');
+const socket = io('https://chatgpttroll-1.onrender.com');
 
 const Chat = ({ isResponder }) => {
     const [chat, setChat] = useState([]);
