@@ -8,17 +8,22 @@ const server = http.createServer(app);
 
 // CORS middleware for Express
 app.use(cors({
-    origin: "https://chatgpt-troll-v6yx-9hk9jl71b-paras-projects-2aec3a5f.vercel.app", // Vercel frontend URL
-    methods: ["GET", "POST"]
+    origin: "https://chatgpt-troll-v6yx-9hk9jl71b-paras-projects-2aec3a5f.vercel.app", // Vercel URL
+    methods: ["GET", "POST"],
+    credentials: true // Optional: include if you need to pass cookies or authorization headers
 }));
 
 // Socket.IO setup with CORS configuration
 const io = socketIO(server, {
     cors: {
-        origin: "https://chatgpt-troll-v6yx-9hk9jl71b-paras-projects-2aec3a5f.vercel.app", // Vercel frontend URL
-        methods: ["GET", "POST"]
+        origin: "https://chatgpt-troll-v6yx-9hk9jl71b-paras-projects-2aec3a5f.vercel.app", // Vercel URL
+        methods: ["GET", "POST"],
+        credentials: true // Optional: include if you need to pass cookies or authorization headers
     }
 });
+
+// Rest of your code...
+
 
 const PORT = process.env.PORT || 4000; // Use dynamic port for Render
 
