@@ -7,16 +7,20 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server, {
     cors: {
-        origin: "https://your-frontend-url.vercel.app", // Replace with your Vercel frontend URL
+        origin: "https://chatgpt-troll-v6yx-9hk9jl71b-paras-projects-2aec3a5f.vercel.app", // Vercel frontend URL
         methods: ["GET", "POST"]
     }
 });
 
-app.use(cors());
+// Enable CORS for the Vercel frontend URL
+app.use(cors({
+    origin: "https://chatgpt-troll-v6yx-9hk9jl71b-paras-projects-2aec3a5f.vercel.app", // Vercel frontend URL
+    methods: ["GET", "POST"]
+}));
 
-const PORT = process.env.PORT || 4000; // Use dynamic port for hosting services like Render
+const PORT = process.env.PORT || 4000; // Use dynamic port for Render
 
-// Store the chat messages (for simplicity)
+// Store the chat messages
 let chatMessages = [];
 
 io.on('connection', (socket) => {
@@ -25,21 +29,15 @@ io.on('connection', (socket) => {
     // Send chat history to new users
     socket.emit('chatHistory', chatMessages);
 
-    // Receive messages from users
+    // Receive questions from users
     socket.on('question', (msg) => {
-        // Save question to chat history
         chatMessages.push({ role: 'asker', message: msg });
-
-        // Emit the question to all connected users
         io.emit('question', msg);
     });
 
-    // Responders reply (you)
+    // Receive responses from responders
     socket.on('response', (msg) => {
-        // Save response to chat history
         chatMessages.push({ role: 'responder', message: msg });
-
-        // Emit the response to all connected users
         io.emit('response', msg);
     });
 

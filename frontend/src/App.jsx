@@ -3,16 +3,17 @@ import { io } from 'socket.io-client';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import './App.css'; // Import the CSS for styling
 
+// Connect to the backend on Render
 const socket = io('https://chatgpttroll-1.onrender.com');
 
 const Chat = ({ isResponder }) => {
     const [chat, setChat] = useState([]);
-    const chatEndRef = useRef(null); // Create a ref for scrolling
+    const chatEndRef = useRef(null);
 
     useEffect(() => {
-        // Get the chat history when the component mounts
+        // Load chat history on mount
         socket.on('chatHistory', (history) => {
-            setChat(history); // Update chat with history
+            setChat(history);
         });
 
         socket.on('question', (msg) => {
@@ -23,7 +24,7 @@ const Chat = ({ isResponder }) => {
             setChat((prevChat) => [...prevChat, { role: 'responder', message: msg }]);
         });
 
-        // Scroll to the bottom when chat updates
+        // Scroll to bottom on new message
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
 
         return () => {
@@ -31,10 +32,10 @@ const Chat = ({ isResponder }) => {
             socket.off('question');
             socket.off('response');
         };
-    }, [chat]); // Add chat as a dependency
+    }, [chat]);
 
     return (
-        <div className="chat-container"> {/* New chat container */}
+        <div className="chat-container">
             <div className="chat-box">
                 {chat.map((msg, idx) => (
                     <div key={idx} className={`chat-message ${msg.role}`}>
@@ -46,19 +47,14 @@ const Chat = ({ isResponder }) => {
                         </div>
                     </div>
                 ))}
-                <div ref={chatEndRef} /> {/* This ref will point to the end of chat */}
+                <div ref={chatEndRef} /> {/* Scroll ref */}
             </div>
         </div>
     );
 };
 
-const User = () => {
-    return <Chat isResponder={false} />;
-};
-
-const Responder = () => {
-    return <Chat isResponder={true} />;
-};
+const User = () => <Chat isResponder={false} />;
+const Responder = () => <Chat isResponder={true} />;
 
 const App = () => {
     const [message, setMessage] = useState('');
@@ -80,13 +76,13 @@ const App = () => {
         <Router>
             <div className="app-container">
                 <div className="top-space">
-                    <h1 className="app-title">ChatGPT</h1> {/* Changed title to ChatGPT */}
+                    <h1 className="app-title">ChatGPT</h1>
                     <div className="header-buttons">
-                    <button className="share-button">Share</button> {/* Added Share button */}
+                        <button className="share-button">Share</button>
                     </div>
                     <img src="public/accounthol.png" alt="Account" className="account-image" />
                 </div>
-                <div className="chat-wrapper"> {/* Wrapping the Routes in a new div */}
+                <div className="chat-wrapper">
                     <Routes>
                         <Route path="/" element={<Navigate to="/user" replace />} />
                         <Route path="/user" element={<User />} />
@@ -94,7 +90,7 @@ const App = () => {
                         <Route path="*" element={<Navigate to="/user" replace />} />
                     </Routes>
                 </div>
-                <div className="bottom-space"> {/* New fixed bottom space */}
+                <div className="bottom-space">
                     <form onSubmit={sendMessage} className="input-area">
                         <input
                             type="text"
@@ -103,7 +99,9 @@ const App = () => {
                             placeholder="Ask a question or type your response..."
                             className="chat-input"
                         />
-                        <button type="submit" className="chat-button"><img className="send-icon" src="/public/arrow3.svg" alt="" /></button>
+                        <button type="submit" className="chat-button">
+                            <img className="send-icon" src="/public/arrow3.svg" alt="" />
+                        </button>
                     </form>
                     <div style={{ marginTop: '10px', color: '#e0e0e0' }}>
                         ChatGPT can make mistakes. Check important info.
