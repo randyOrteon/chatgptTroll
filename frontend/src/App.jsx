@@ -77,10 +77,10 @@ const App = () => {
         <Router>
             <div className="app-container">
                 <div className="top-space">
-                    <h1 className="app-title">Chat Application</h1>
+                    <h1 className="app-title">ChatGPT</h1> {/* Changed title to ChatGPT */}
                     <div className="header-buttons">
-                        <button className="header-button">Help</button>
-                        <button className="header-button">Settings</button>
+                        <button className="share-button">Share</button> {/* Added Share button */}
+                        <img src="https://via.placeholder.com/30" alt="Account" className="account-image" /> {/* Dummy account image */}
                     </div>
                 </div>
                 <div className="chat-wrapper"> {/* Wrapping the Routes in a new div */}
