@@ -7,11 +7,7 @@ const app = express();
 const server = http.createServer(app);
 
 // Enable CORS for the Vercel frontend URL
-app.use(cors({
-    origin: "https://chatgpt-troll-77939zk3n-paras-projects-2aec3a5f.vercel.app",
-    methods: ["GET", "POST"],
-    credentials: true,
-}));
+app.use(cors());
 
 const io = socketIO(server, {
     cors: {
