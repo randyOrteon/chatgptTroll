@@ -6,7 +6,6 @@ import './App.css'; // Import the CSS for styling
 // Connect to the backend on Render
 const socket = io('https://chatgpttroll-1.onrender.com');
 
-
 const Chat = ({ isResponder }) => {
     const [chat, setChat] = useState([]);
     const chatEndRef = useRef(null);
@@ -41,7 +40,7 @@ const Chat = ({ isResponder }) => {
                 {chat.map((msg, idx) => (
                     <div key={idx} className={`chat-message ${msg.role}`}>
                         {msg.role === 'responder' && (
-                            <img src="public/gptlogog.jpg" alt="Responder Logo" className="responder-logo" />
+                            <img src="/gptlogog.jpg" alt="Responder Logo" className="responder-logo" />
                         )}
                         <div className={`${msg.role} message-content`}>
                             {msg.message}
@@ -81,7 +80,7 @@ const App = () => {
                     <div className="header-buttons">
                         <button className="share-button">Share</button>
                     </div>
-                    <img src="public/accounthol.png" alt="Account" className="account-image" />
+                    <img src="/accounthol.png" alt="Account" className="account-image" />
                 </div>
                 <div className="chat-wrapper">
                     <Routes>
@@ -101,7 +100,7 @@ const App = () => {
                             className="chat-input"
                         />
                         <button type="submit" className="chat-button">
-                            <img className="send-icon" src="/public/arrow3.svg" alt="" />
+                            <img className="send-icon" src="/arrow3.svg" alt="" />
                         </button>
                     </form>
                     <div style={{ marginTop: '10px', color: '#e0e0e0' }}>
