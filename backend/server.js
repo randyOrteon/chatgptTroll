@@ -21,6 +21,11 @@ const io = socketIO(server, {
     }
 });
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok' });
+});
+
 // Store the chat messages
 let chatMessages = [];
 
@@ -47,6 +52,6 @@ io.on('connection', (socket) => {
     });
 });
 
-// Start the server (only once)
+// Start the server
 const PORT = process.env.PORT || 4000; // Use dynamic port for Render
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
