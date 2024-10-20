@@ -21,13 +21,6 @@ const io = socketIO(server, {
     }
 });
 
-// Rest of your server code...
-
-const PORT = process.env.PORT || 4000; // Use dynamic port for Render
-
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-
 // Store the chat messages
 let chatMessages = [];
 
@@ -54,5 +47,6 @@ io.on('connection', (socket) => {
     });
 });
 
-// Start the server
+// Start the server (only once)
+const PORT = process.env.PORT || 4000; // Use dynamic port for Render
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
