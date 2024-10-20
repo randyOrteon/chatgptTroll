@@ -8,23 +8,25 @@ const server = http.createServer(app);
 
 // Enable CORS for the Vercel frontend URL
 app.use(cors({
-    origin: "https://chatgpt-troll-v6yx-9hk9jl71b-paras-projects-2aec3a5f.vercel.app", // Update this to your current Vercel URL
+    origin: "https://chatgpt-troll-77939zk3n-paras-projects-2aec3a5f.vercel.app", // Hardcoded Vercel URL
     methods: ["GET", "POST"],
-    credentials: true // Optional: include if you need to pass cookies or authorization headers
+    credentials: true
 }));
 
 const io = socketIO(server, {
     cors: {
-        origin: "https://chatgpt-troll-v6yx-9hk9jl71b-paras-projects-2aec3a5f.vercel.app", // Update this to your current Vercel URL
+        origin: "https://chatgpt-troll-77939zk3n-paras-projects-2aec3a5f.vercel.app", // Hardcoded Vercel URL
         methods: ["GET", "POST"],
-        credentials: true // Optional: include if you need to pass cookies or authorization headers
+        credentials: true
     }
 });
 
-// Rest of your code...
-
+// Rest of your server code...
 
 const PORT = process.env.PORT || 4000; // Use dynamic port for Render
+
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
 
 // Store the chat messages
 let chatMessages = [];
