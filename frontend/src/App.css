@@ -183,10 +183,10 @@ html, body {
 }
 
 .input-area button {
-  padding: 10px 15px;
+  padding: 8px 10px;
   border: none;
-  border-radius: 30px;
-  background-color: #2f2f2f;
+  border-radius: 25px;
+  background-color: white;
   color: white;
   cursor: pointer;
   transition: background-color 0.3s;
@@ -312,4 +312,24 @@ html, body {
   overflow-y: auto; /* Enable scrolling for the chat messages */
   flex-grow: 1; /* Allow chat box to grow and fill available space */
   padding: 16px; /* Optional: add some padding for aesthetics */
+}
+.chat-container {
+  width: 100%; /* Optional: set width to 100% or a fixed width */
+  max-width: 600px; /* Set a maximum width for better layout */
+  height: 80vh; /* Increase height for the chat container */
+  display: flex;
+  flex-direction: column; /* Stack chat box and input area */
+  position: relative; /* For positioning of chat elements */
+ 
+  border-radius: 8px; /* Rounded corners */
+  
+}
+
+.footer-message {
+  margin-top: auto; /* Push the footer to the bottom */
+  padding: 10px; /* Add some padding */
+  font-size: 14px; /* Font size for the message */
+  text-align: center; /* Center the text */
+  color: #666; /* Light gray color for the text */
+ 
 }

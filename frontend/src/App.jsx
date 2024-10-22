@@ -86,6 +86,9 @@ const Chat = () => {
                     <img className="send-icon" src="/arrow3.svg" alt="Send" />
                 </button>
             </form>
+            <div className="footer-message">
+                ChatGPT can make mistakes. Check important info.
+            </div>
         </div>
     );
 };
