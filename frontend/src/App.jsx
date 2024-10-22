@@ -1,38 +1,44 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import './App.css'; // Import the CSS for styling
+import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
+import './App.css';
 
-// Connect to the backend locally
-const socket = io('http://localhost:4000');
+// Connect to the backend on Render
+const socket = io('http://localhost:4000'); // Change this to your local server if needed
 
 const Chat = ({ isResponder }) => {
     const [chat, setChat] = useState([]);
     const chatEndRef = useRef(null);
 
     useEffect(() => {
-        // Load chat history on mount
-        socket.on('chatHistory', (history) => {
-            setChat(history);
-        });
+        // Load chat history from localStorage on mount
+        const storedChat = JSON.parse(localStorage.getItem('chatMessages')) || [];
+        setChat(storedChat);
 
         socket.on('question', (msg) => {
-            setChat((prevChat) => [...prevChat, { role: 'asker', message: msg }]);
+            setChat(prevChat => {
+                const newChat = [...prevChat, { role: 'asker', message: msg }];
+                localStorage.setItem('chatMessages', JSON.stringify(newChat)); // Store in localStorage
+                return newChat;
+            });
         });
 
         socket.on('response', (msg) => {
-            setChat((prevChat) => [...prevChat, { role: 'responder', message: msg }]);
+            setChat(prevChat => {
+                const newChat = [...prevChat, { role: 'responder', message: msg }];
+                localStorage.setItem('chatMessages', JSON.stringify(newChat)); // Store in localStorage
+                return newChat;
+            });
         });
 
         // Scroll to bottom on new message
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
 
         return () => {
-            socket.off('chatHistory');
             socket.off('question');
             socket.off('response');
         };
-    }, [chat]);
+    }, []); // Run only on mount
 
     return (
         <div className="chat-container">
@@ -54,7 +60,45 @@ const Chat = ({ isResponder }) => {
 };
 
 const User = () => <Chat isResponder={false} />;
-const Responder = () => <Chat isResponder={true} />;
+
+const Responder = () => {
+    const [messages, setMessages] = useState([]);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const storedMessages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+        setMessages(storedMessages);
+
+        socket.on('question', (msg) => {
+            setMessages(prevMessages => {
+                const newMessages = [...prevMessages, { role: 'asker', message: msg }];
+                localStorage.setItem('chatMessages', JSON.stringify(newMessages)); // Store in localStorage
+                return newMessages;
+            });
+        });
+
+        return () => {
+            socket.off('question');
+        };
+    }, []);
+
+    const handleChatClick = (message) => {
+        navigate(`/chat/${message.message}`); // Assuming message contains text
+    };
+
+    return (
+        <div className="responder-page">
+            <h2>Responder Page</h2>
+            <div className="messages">
+                {messages.map((msg, idx) => (
+                    <div key={idx} className={`message ${msg.role}`} onClick={() => handleChatClick(msg)}>
+                        <div className="message-content">{msg.message}</div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
 
 const App = () => {
     const [message, setMessage] = useState('');
@@ -87,6 +131,7 @@ const App = () => {
                         <Route path="/" element={<Navigate to="/user" replace />} />
                         <Route path="/user" element={<User />} />
                         <Route path="/responder" element={<Responder />} />
+                        <Route path="/chat/:messageId" element={<Chat isResponder={true} />} />
                         <Route path="*" element={<Navigate to="/user" replace />} />
                     </Routes>
                 </div>

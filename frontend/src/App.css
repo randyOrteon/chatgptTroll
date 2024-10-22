@@ -235,3 +235,48 @@ html, body {
   background-color: white;
   border-radius: 50%;
 }
+.responder-page {
+  padding: 20px;
+  background-color: #212121;
+  color: #e0e0e0;
+}
+
+.room-list {
+  margin-top: 20px;
+}
+
+.room {
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  background-color: #2f2f2f;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.room:hover {
+  background-color: #3f3f3f;
+}
+
+.responder-page {
+  padding: 20px;
+  background-color: #212121;
+  color: #e0e0e0;
+}
+
+.users {
+  margin-top: 20px;
+}
+
+.user {
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  background-color: #2f2f2f;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.user:hover {
+  background-color: #3f3f3f;
+}
