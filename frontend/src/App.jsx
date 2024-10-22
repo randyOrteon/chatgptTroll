@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate, useParams, useNavigat
 import './App.css';
 
 // Connect to the backend
-const socket = io('http://localhost:4000');
+const socket = io('https://chatgptf.onrender.com');
 
 const Chat = () => {
     const { roomId } = useParams(); // Get roomId from URL parameters
