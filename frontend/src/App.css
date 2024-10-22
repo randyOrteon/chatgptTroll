@@ -9,62 +9,60 @@
 html, body {
   height: 100%;
   font-family: 'Arial', sans-serif;
-  background-color: #212121; /* Main background color */
-  color: #e0e0e0; /* Light text color */
+  background-color: #212121;
+  color: #e0e0e0;
 }
 
 /* Container holding the chat and input */
 .app-container {
   width: 100%;
-  height: 100vh; /* Take full height of viewport */
+  height: 100vh;
   display: flex;
   flex-direction: column;
 }
+
 .app-title {
-  font-size: 24px; /* Adjust the size to your preference */
-  font-weight: bold; /* Make it bold */
-  color: #b4b4b4; /* A bright color similar to ChatGPT's theme */
-  margin: 0; /* Remove default margin */
-  padding: 0; /* Remove default padding */
-  text-align: left; /* Align text to the left */
-  flex-grow: 1; /* Allow title to take up available space */
+  font-size: 24px;
+  font-weight: bold;
+  color: #b4b4b4;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  flex-grow: 1;
 }
 
 /* Share button with icon */
 .share-button {
-  background-color: #212121; /* Share button color */
-  color: white; /* Text color */
-  border: #b4b4b4;
-  border-style: solid;
-  border-width: 1px;
-  border-radius: 20px; /* Rounded edges */
-  padding: 8px 12px; /* Padding for button */
-  cursor: pointer; /* Pointer cursor on hover */
-  margin-left: 10px; /* Space between buttons */
-  display: flex; /* Flexbox for icon and text */
+  background-color: #212121;
+  color: white;
+  border: #b4b4b4 solid 1px;
+  border-radius: 20px;
+  padding: 8px 12px;
+  cursor: pointer;
+  margin-left: 10px;
+  display: flex;
   align-items: center;
-  transition: background-color 0.3s; /* Smooth transition */
+  transition: background-color 0.3s;
 }
 
 .share-button:hover {
-  background-color: #efefef; /* Light background on hover */
+  background-color: #efefef;
   color: #212121;
 }
 
-/* SVG icon inside the share button */
 .share-button svg {
-  width: 16px; /* Set icon size */
+  width: 16px;
   height: 16px;
-  margin-right: 8px; /* Space between icon and text */
+  margin-right: 8px;
 }
 
 /* Account image styling */
 .account-image {
-  width: 30px; /* Fixed size for account image */
-  height: 30px; /* Fixed size for account image */
-  border-radius: 50%; /* Make it circular */
-  margin-left: 10px; /* Space between the button and image */
-  cursor: pointer; /* Pointer cursor on hover */
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-left: 10px;
+  cursor: pointer;
 }
 
 /* Top space */
@@ -73,268 +71,245 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  position: fixed; /* Fix the top space to the top of the viewport */
-  top: 0; /* Align it to the top */
-  left: 0; /* Align it to the left */
-  right: 0; /* Align it to the right */
-  background-color: #212121; /* Match background to avoid transparency issues */
-  z-index: 10; /* Ensure it's above other content */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: #212121;
+  z-index: 10;
 }
 
-/* Chat wrapper */
+/* Chat sections */
 .chat-wrapper {
-  flex: 1; /* Take up remaining space */
+  flex: 1;
   display: flex;
-  justify-content: center; /* Center the chat container */
-  margin-top: 80px; /* Add margin to prevent overlap with fixed top space */
+  justify-content: center;
+  margin-top: 80px;
 }
 
-/* Chat container */
 .chat-container {
-  width: 100%; /* Take full width of the wrapper */
-  max-width: 800px; /* Limit the width for better readability */
-  height: calc(100% - 80px); /* Adjust height to fill the remaining space */
+  width: 100%;
+  max-width: 800px;
+  height: calc(100% - 80px);
   display: flex;
   flex-direction: column;
-  padding: 0 20px; /* Add left and right padding */
+  padding: 0 20px;
 }
 
-/* Chat history section */
 .chat-box {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
-  background-color: #212121; /* Match with the background */
+  background-color: #212121;
   border-radius: 8px;
 }
 
-/* Chat message styling */
+/* Message styling */
 .chat-message {
   margin-bottom: 20px;
   display: flex;
 }
 
-/* User message styling */
-.asker {
-  align-self: flex-end; /* Align user messages to the right */
-}
-
-/* Responder message styling */
-.responder {
-  align-self: flex-start; /* Align responder messages to the left */
-}
-
-/* Common message styling */
 .message-content {
   padding: 12px 16px;
-  border-radius: 20px; /* More rounded edges for the bubbles */
-  max-width: 75%; /* Adjust bubble width */
+  border-radius: 20px;
+  max-width: 75%;
   word-wrap: break-word;
 }
 
-/* User message bubble styling */
+/* User message styling */
+.asker {
+  align-self: flex-end;
+}
+
 .asker .message-content {
-  background-color: #2f2f2f; /* User's message bubble color */
+  background-color: #444;
   color: #fff;
-  margin-left: auto; /* Move to the right */
+  margin-left: auto;
 }
 
-/* Responder logo styling */
-.responder-logo {
-  width: 30px; /* Adjust width to fit your design */
-  height: 30px; /* Ensure it's square */
-  border-radius: 50%; /* Make it circular */
-  margin-right: 7px; /* Space between logo and message */
-  align-self: flex-start; /* Align logo to the top of the message */
-  background-color: #b4b4b4; /* Placeholder color for logo */
-}
-
-/* Responder message with logo alignment */
+/* Responder styling */
 .responder {
+  align-self: flex-start;
   display: flex;
-  align-items: flex-start; /* Align items to the top */
+  align-items: flex-start;
 }
 
-/* Responder message content styling */
 .responder .message-content {
-  margin-right: auto; /* Move the message content to the left */
-  background-color: transparent; /* No background for responder messages */
+  margin-right: auto;
+  background-color: #444;
   color: #fff;
-  border: none; /* Ensure no borders */
-}
-/* Bottom space */
-.bottom-space {
-  position: fixed; /* Keep it fixed at the bottom */
-  left: 0; /* Align it to the left */
-  right: 0; /* Align it to the right */
-  bottom: 0; /* Align it to the bottom */
-  background-color: #212121; /* Match background color */
-  padding: 10px 20px; /* Add padding to the top and bottom, and left and right */
-  display: flex; /* Use flexbox to center content */
-  flex-direction: column; /* Stack items vertically */
-  align-items: center; /* Center items horizontally */
+  border: none;
 }
 
-/* Input area styling */
+.responder-logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 7px;
+  align-self: flex-start;
+  background-color: #b4b4b4;
+}
+
+/* Bottom space and input area */
+.bottom-space {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #212121;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
+}
+
 .input-area {
   display: flex;
   align-items: center;
-  padding: 5px; /* Slightly reduce padding to keep it compact */
-  border-radius: 30px; /* Add rounded edges */
-  background-color: #2f2f2f; /* Match the input background color */
-  width: 80%; /* Set width to 80% of the parent container */
-  max-width: 700px; /* Optional: set a maximum width */
-  max-height: 50px;
+  width: 100%;
 }
 
-/* Input field styling */
 .input-area input {
   flex-grow: 1;
-  padding: 10px; /* Padding for the input field */
-  border-radius: 20px; /* Rounded input field */
+  padding: 12px;
+  border-radius: 20px;
   border: none;
-  background-color: #2f2f2f; /* Input field background */
+  background-color: #2f2f2f;
   color: #fff;
   font-size: 16px;
   outline: none;
+  margin-right: 10px;
 }
 
-/* Input button styling */
 .input-area button {
-  margin-left: 10px;
+  padding: 10px 15px;
   border: none;
-  border-radius: 30px; /* Rounded button */
-  font-weight: bold;
+  border-radius: 30px;
+  background-color: #2f2f2f;
+  color: white;
   cursor: pointer;
-  background-color: #2f2f2f; /* Button background */
-  color: #2f2f2f;
+  transition: background-color 0.3s;
 }
 
-/* Button hover styling */
 .input-area button:hover {
-  color: #2f2f2f;
-}
-
-/* Information message styling */
-.info-message {
-  text-align: center;
-  color: #e0e0e0; /* Light text color */
-  margin-top: 5px; /* Add some space above the message */
-  font-size: 14px; /* Adjust font size as needed */
+  background-color: #444;
 }
 
 /* Send icon */
 .send-icon {
-  width: 5vh;
-  height: 5vh;
-  margin-right: 5px;
-  margin-left: 10px;
+  width: 24px;
+  height: 24px;
+}
+
+/* Information message */
+.info-message {
+  text-align: center;
+  color: #e0e0e0;
   margin-top: 5px;
-  cursor: pointer;
-  transition: all 0.3s;
-  background-color: white;
-  border-radius: 50%;
+  font-size: 14px;
 }
 
-
-/* Responder dashboard styles */
-.responder-dashboard {
-  margin-top: 20px;
-}
-
-.user-list {
-  list-style: none;
-  padding: 0;
-}
-
-.user-list li {
-  background-color: #f9f9f9;
-  margin: 5px 0;
-  padding: 10px;
-  border-radius: 5px;
-  transition: background-color 0.3s;
-}
-
-.user-list li:hover {
-  background-color: #e0e0e0;
-}
-
-.user-list a {
-  text-decoration: none;
-  color: #333;
-}
-
-.user-list a:hover {
-  color: #333;
-}
-
-/* Responder message with different styling */
-.responder .message-content {
-  background-color: #444; /* Darker background for responder messages */
-  color: #fff; /* White text color */
-}
-
-/* User message with different styling */
-.asker .message-content {
-  background-color: #444; /* Blue background for user messages */
-  color: #fff; /* White text color */
-}
-
-/* Responder page styles */
+/* Responder dashboard */
 .responder-page {
-  padding: 20px; /* Padding for the responder page */
-  background-color: #212121; /* Match background with the app */
-  border-radius: 8px; /* Rounded corners */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Slight shadow for depth */
+  padding: 20px;
+  background-color: #212121;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .responder-title {
-  font-size: 24px; /* Title size */
-  margin-bottom: 20px; /* Space below title */
-  text-align: center; /* Center title */
-  color: #b4b4b4; /* Light title color */
+  font-size: 24px;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #b4b4b4;
 }
 
 .active-rooms {
-  max-height: 400px; /* Limit height for scrolling */
-  overflow-y: auto; /* Scroll if needed */
-  padding: 10px; /* Padding around the rooms list */
-  background-color: #2f2f2f; /* Background for active rooms */
-  border-radius: 8px; /* Rounded corners */
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 10px;
+  background-color: #2f2f2f;
+  border-radius: 8px;
 }
 
 .room-item {
-  display: flex; /* Flexbox for alignment */
-  justify-content: space-between; /* Space between message and button */
-  align-items: center; /* Center vertically */
-  padding: 15px; /* Padding for each room item */
-  margin-bottom: 10px; /* Space below each room item */
-  background-color: #444; /* Background color for room items */
-  border-radius: 5px; /* Rounded edges */
-  transition: background-color 0.3s; /* Transition effect */
-  cursor: pointer; /* Pointer cursor */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  margin-bottom: 10px;
+  background-color: #444;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+  cursor: pointer;
 }
 
 .room-item:hover {
-  background-color: #555; /* Darken on hover */
+  background-color: #555;
 }
 
 .respond-button {
-  padding: 8px 12px; /* Padding for the respond button */
-  background-color: #007bff; /* Bootstrap primary color */
-  color: white; /* Text color */
-  border: none; /* No border */
-  border-radius: 5px; /* Rounded corners */
-  cursor: pointer; /* Pointer cursor */
-  transition: background-color 0.3s; /* Transition effect */
+  padding: 8px 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
 
 .respond-button:hover {
-  background-color: #0056b3; /* Darker blue on hover */
+  background-color: #0056b3;
 }
 
 .no-active-users {
-  text-align: center; /* Center text */
-  color: #e0e0e0; /* Light text color */
-  margin-top: 20px; /* Space above message */
+  text-align: center;
+  color: #e0e0e0;
+  margin-top: 20px;
+}
+.bottom-space {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #212121;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
+}
+.chat-wrapper {
+  height: calc(100vh - 100px); /* Adjust height based on your layout */
+  overflow: hidden; /* Prevent scrolling */
+  display: flex; /* Ensure it uses flex layout */
+  flex-direction: column; /* Stack children vertically */
+  
+}
+
+.chat-container {
+  flex-grow: 1; /* Allow chat container to grow */
+  display: flex;
+  flex-direction: column; /* Stack chat box and input area */
+  position: relative; /* For positioning of chat elements */
+}
+
+.chat-box {
+  overflow-y: auto; /* Enable scrolling for the chat messages */
+  flex-grow: 1; /* Allow chat box to grow and fill available space */
+}
+.chat-wrapper {
+  height: calc(100vh - 100px); /* Adjust height based on your layout */
+  overflow: hidden; /* Prevent scrolling */
+  display: flex; /* Ensure it uses flex layout */
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+}
+
+
+
+.chat-box {
+  overflow-y: auto; /* Enable scrolling for the chat messages */
+  flex-grow: 1; /* Allow chat box to grow and fill available space */
+  padding: 16px; /* Optional: add some padding for aesthetics */
 }
