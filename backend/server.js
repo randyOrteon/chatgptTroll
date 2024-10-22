@@ -1,56 +1,72 @@
 const express = require('express');
 const http = require('http');
-const socketIO = require('socket.io');
+const socketIo = require('socket.io');
 const cors = require('cors');
 
 const app = express();
 const server = http.createServer(app);
-
-app.use(cors({
-    origin: '*',
-    methods: ["GET", "POST"],
-    credentials: true
-}));
-
-const io = socketIO(server, {
+const io = socketIo(server, {
     cors: {
-        origin: '*',
+        origin: "http://localhost:3000", // Change this to your client's origin
         methods: ["GET", "POST"],
+        allowedHeaders: ["my-custom-header"],
         credentials: true
     }
 });
 
-// Store the chat messages and rooms
-let chatRooms = {};
+// Middleware
+app.use(cors());
 
+// Store messages in memory (for demonstration purposes)
+let messages = {}; // This can be replaced with a database in a production app
+
+// Handle socket connection
 io.on('connection', (socket) => {
-    console.log('A user connected');
+    console.log('New client connected:', socket.id);
 
+    // Handle getting chat messages for a specific room
+    socket.on('getMessages', (roomId) => {
+        const roomMessages = messages[roomId] || [];
+        socket.emit('chatHistory', roomMessages);
+    });
+
+    // Handle incoming questions
+    socket.on('question', (data) => {
+        const { roomId, msg } = data;
+        console.log('Received question:', data); // Log received questions
+        // Save the message
+        messages[roomId] = messages[roomId] || [];
+        messages[roomId].push({ role: 'asker', message: msg });
+        socket.to(roomId).emit('question', { roomId, msg });
+    });
+
+    // Handle incoming responses
+    socket.on('response', (data) => {
+        const { roomId, msg } = data;
+        console.log('Received response:', data); // Log received responses
+        // Save the message
+        messages[roomId] = messages[roomId] || [];
+        messages[roomId].push({ role: 'responder', message: msg });
+        socket.to(roomId).emit('response', { roomId, msg });
+    });
+
+    // Handle getting rooms (for the responder)
     socket.on('getRooms', () => {
-        const roomsList = Object.keys(chatRooms).map(roomId => ({
+        const roomsList = Object.keys(messages).map((roomId) => ({
             id: roomId,
-            title: `Room ${roomId}`,
-            latestMessage: chatRooms[roomId][chatRooms[roomId].length - 1]?.message || 'No messages yet',
+            latestMessage: messages[roomId][messages[roomId].length - 1]?.message || 'No messages yet'
         }));
         socket.emit('roomsList', roomsList);
     });
 
-    socket.on('question', ({ roomId, msg }) => {
-        if (!chatRooms[roomId]) chatRooms[roomId] = [];
-        chatRooms[roomId].push({ role: 'asker', message: msg });
-        io.emit('question', { roomId, msg }); // Emit to all responders
-    });
-
-    socket.on('response', ({ roomId, msg }) => {
-        if (!chatRooms[roomId]) chatRooms[roomId] = [];
-        chatRooms[roomId].push({ role: 'responder', message: msg });
-        io.emit('response', { roomId, msg }); // Emit to all responders
-    });
-
+    // Handle disconnection
     socket.on('disconnect', () => {
-        console.log('User disconnected');
+        console.log('Client disconnected:', socket.id);
     });
 });
 
-const PORT = process.env.PORT || 4000; 
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Start the server
+const PORT = process.env.PORT || 4000;
+server.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
