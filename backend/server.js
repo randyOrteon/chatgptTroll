@@ -26,9 +26,6 @@ let chatRooms = {};
 io.on('connection', (socket) => {
     console.log('A user connected');
 
-    // Send chat history to new users
-    socket.emit('chatHistory', chatRooms);
-
     socket.on('getRooms', () => {
         const roomsList = Object.keys(chatRooms).map(roomId => ({
             id: roomId,
@@ -38,29 +35,22 @@ io.on('connection', (socket) => {
         socket.emit('roomsList', roomsList);
     });
 
-    socket.on('question', (msg) => {
-        const roomId = getRoomIdForUser(socket.id); // Assign a room based on user
+    socket.on('question', ({ roomId, msg }) => {
         if (!chatRooms[roomId]) chatRooms[roomId] = [];
         chatRooms[roomId].push({ role: 'asker', message: msg });
-        io.emit('question', msg);
+        io.emit('question', { roomId, msg }); // Emit to all responders
     });
 
-    socket.on('response', (msg) => {
-        const roomId = getRoomIdForUser(socket.id); // Assign a room based on responder
+    socket.on('response', ({ roomId, msg }) => {
         if (!chatRooms[roomId]) chatRooms[roomId] = [];
         chatRooms[roomId].push({ role: 'responder', message: msg });
-        io.emit('response', msg);
+        io.emit('response', { roomId, msg }); // Emit to all responders
     });
 
     socket.on('disconnect', () => {
         console.log('User disconnected');
     });
 });
-
-// Function to assign a room ID based on the socket ID
-const getRoomIdForUser = (socketId) => {
-    return socketId; // Simple example to use socket ID as room ID
-};
 
 const PORT = process.env.PORT || 4000; 
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

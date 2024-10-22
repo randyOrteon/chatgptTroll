@@ -1,34 +1,39 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
-import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import './App.css';
 
-// Connect to the backend on Render
-const socket = io('http://localhost:4000'); // Change this to your local server if needed
+// Connect to the backend
+const socket = io('http://localhost:4000');
 
-const Chat = ({ isResponder }) => {
+const Chat = ({ roomId }) => {
     const [chat, setChat] = useState([]);
     const chatEndRef = useRef(null);
 
     useEffect(() => {
         // Load chat history from localStorage on mount
-        const storedChat = JSON.parse(localStorage.getItem('chatMessages')) || [];
+        const storedChat = JSON.parse(localStorage.getItem(`chatMessages_${roomId}`)) || [];
         setChat(storedChat);
 
-        socket.on('question', (msg) => {
-            setChat(prevChat => {
-                const newChat = [...prevChat, { role: 'asker', message: msg }];
-                localStorage.setItem('chatMessages', JSON.stringify(newChat)); // Store in localStorage
-                return newChat;
-            });
+        // Listener for incoming messages
+        socket.on('question', ({ roomId: receivedRoomId, msg }) => {
+            if (receivedRoomId === roomId) {
+                setChat(prevChat => {
+                    const newChat = [...prevChat, { role: 'asker', message: msg }];
+                    localStorage.setItem(`chatMessages_${roomId}`, JSON.stringify(newChat)); // Store in localStorage
+                    return newChat;
+                });
+            }
         });
 
-        socket.on('response', (msg) => {
-            setChat(prevChat => {
-                const newChat = [...prevChat, { role: 'responder', message: msg }];
-                localStorage.setItem('chatMessages', JSON.stringify(newChat)); // Store in localStorage
-                return newChat;
-            });
+        socket.on('response', ({ roomId: receivedRoomId, msg }) => {
+            if (receivedRoomId === roomId) {
+                setChat(prevChat => {
+                    const newChat = [...prevChat, { role: 'responder', message: msg }];
+                    localStorage.setItem(`chatMessages_${roomId}`, JSON.stringify(newChat)); // Store in localStorage
+                    return newChat;
+                });
+            }
         });
 
         // Scroll to bottom on new message
@@ -38,7 +43,7 @@ const Chat = ({ isResponder }) => {
             socket.off('question');
             socket.off('response');
         };
-    }, []); // Run only on mount
+    }, [roomId]);
 
     return (
         <div className="chat-container">
@@ -53,46 +58,47 @@ const Chat = ({ isResponder }) => {
                         </div>
                     </div>
                 ))}
-                <div ref={chatEndRef} /> {/* Scroll ref */}
+                <div ref={chatEndRef} />
             </div>
         </div>
     );
 };
 
-const User = () => <Chat isResponder={false} />;
-
 const Responder = () => {
-    const [messages, setMessages] = useState([]);
-    const navigate = useNavigate();
+    const [rooms, setRooms] = useState({});
 
     useEffect(() => {
-        const storedMessages = JSON.parse(localStorage.getItem('chatMessages')) || [];
-        setMessages(storedMessages);
+        socket.emit('getRooms');
 
-        socket.on('question', (msg) => {
-            setMessages(prevMessages => {
-                const newMessages = [...prevMessages, { role: 'asker', message: msg }];
-                localStorage.setItem('chatMessages', JSON.stringify(newMessages)); // Store in localStorage
-                return newMessages;
-            });
+        socket.on('roomsList', (roomsList) => {
+            const formattedRooms = roomsList.reduce((acc, room) => {
+                acc[room.id] = room.latestMessage;
+                return acc;
+            }, {});
+            setRooms(formattedRooms);
         });
 
         return () => {
-            socket.off('question');
+            socket.off('roomsList');
         };
     }, []);
 
-    const handleChatClick = (message) => {
-        navigate(`/chat/${message.message}`); // Assuming message contains text
+    const sendResponse = (roomId, msg) => {
+        socket.emit('response', { roomId, msg });
     };
 
     return (
         <div className="responder-page">
             <h2>Responder Page</h2>
             <div className="messages">
-                {messages.map((msg, idx) => (
-                    <div key={idx} className={`message ${msg.role}`} onClick={() => handleChatClick(msg)}>
-                        <div className="message-content">{msg.message}</div>
+                {Object.keys(rooms).map((roomId) => (
+                    <div key={roomId} className="message">
+                        <div className="message-content">
+                            {rooms[roomId] ? rooms[roomId] : 'No messages yet'}
+                        </div>
+                        <button onClick={() => sendResponse(roomId, 'This is a response!')}>
+                            Respond
+                        </button>
                     </div>
                 ))}
             </div>
@@ -102,16 +108,12 @@ const Responder = () => {
 
 const App = () => {
     const [message, setMessage] = useState('');
+    const roomId = getRoomIdForUser(); // Assign a unique room ID for the user
 
     const sendMessage = (e) => {
         e.preventDefault();
         if (message.trim()) {
-            const isResponder = window.location.pathname === "/responder";
-            if (isResponder) {
-                socket.emit('response', message);
-            } else {
-                socket.emit('question', message);
-            }
+            socket.emit('question', { roomId, msg: message });
             setMessage('');
         }
     };
@@ -129,9 +131,8 @@ const App = () => {
                 <div className="chat-wrapper">
                     <Routes>
                         <Route path="/" element={<Navigate to="/user" replace />} />
-                        <Route path="/user" element={<User />} />
+                        <Route path="/user" element={<Chat roomId={roomId} />} />
                         <Route path="/responder" element={<Responder />} />
-                        <Route path="/chat/:messageId" element={<Chat isResponder={true} />} />
                         <Route path="*" element={<Navigate to="/user" replace />} />
                     </Routes>
                 </div>
@@ -155,6 +156,13 @@ const App = () => {
             </div>
         </Router>
     );
+};
+
+// Function to assign a unique room ID for the user
+const getRoomIdForUser = () => {
+    const userId = localStorage.getItem('userId') || Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('userId', userId); // Store user ID in localStorage
+    return `room-${userId}`;
 };
 
 export default App;
