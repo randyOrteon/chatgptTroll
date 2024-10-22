@@ -13,49 +13,54 @@ const Chat = () => {
     const chatEndRef = useRef(null);
 
     useEffect(() => {
-        // Load chat history from localStorage on mount
-        const storedChat = JSON.parse(localStorage.getItem(`chatMessages_${roomId}`)) || [];
-        setChat(storedChat);
+        // Load chat history from server when the component mounts
+        socket.emit('getMessages', roomId);
+
+        // Handle chat history from server
+        const handleChatHistory = (messages) => {
+            setChat(messages);
+            chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        };
 
         // Listener for incoming messages
         const handleQuestion = ({ roomId: receivedRoomId, msg }) => {
             if (receivedRoomId === roomId) {
-                setChat(prevChat => {
-                    const newChat = [...prevChat, { role: 'asker', message: msg }];
-                    localStorage.setItem(`chatMessages_${roomId}`, JSON.stringify(newChat)); // Store in localStorage
-                    return newChat;
-                });
+                const newChat = [...chat, { role: 'asker', message: msg }];
+                setChat(newChat);
+                chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
             }
         };
 
         const handleResponse = ({ roomId: receivedRoomId, msg }) => {
             if (receivedRoomId === roomId) {
-                setChat(prevChat => {
-                    const newChat = [...prevChat, { role: 'responder', message: msg }];
-                    localStorage.setItem(`chatMessages_${roomId}`, JSON.stringify(newChat)); // Store in localStorage
-                    return newChat;
-                });
+                const newChat = [...chat, { role: 'responder', message: msg }];
+                setChat(newChat);
+                chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
             }
         };
 
+        // Register event listeners
+        socket.on('chatHistory', handleChatHistory);
         socket.on('question', handleQuestion);
         socket.on('response', handleResponse);
 
-        // Scroll to bottom on new message
-        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-
+        // Cleanup function to remove event listeners
         return () => {
+            socket.off('chatHistory', handleChatHistory);
             socket.off('question', handleQuestion);
             socket.off('response', handleResponse);
         };
-    }, [roomId]);
+    }, [roomId]); // Update whenever roomId changes
 
     const sendMessage = (e) => {
         e.preventDefault();
         if (message.trim()) {
             const role = window.location.pathname.includes('/chat/') ? 'responder' : 'asker'; // Determine role based on route
             socket.emit(role === 'responder' ? 'response' : 'question', { roomId, msg: message }); // Emit message to server based on role
-            setMessage('');
+            setMessage(''); // Clear the input field
+            
+            // Reload the page after sending the message
+            window.location.reload();
         }
     };
 
@@ -99,7 +104,7 @@ const Responder = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        socket.emit('getRooms');
+        socket.emit('getRooms'); // Request the list of rooms
 
         socket.on('roomsList', (roomsList) => {
             const formattedRooms = roomsList.reduce((acc, room) => {
