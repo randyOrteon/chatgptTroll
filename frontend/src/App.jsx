@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
-import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useParams, useNavigate } from 'react-router-dom';
 import './App.css';
 
 // Connect to the backend
 const socket = io('http://localhost:4000');
 
-const Chat = ({ roomId }) => {
+const Chat = () => {
+    const { roomId } = useParams(); // Get roomId from URL parameters
     const [chat, setChat] = useState([]);
+    const [message, setMessage] = useState('');
     const chatEndRef = useRef(null);
 
     useEffect(() => {
@@ -16,7 +18,7 @@ const Chat = ({ roomId }) => {
         setChat(storedChat);
 
         // Listener for incoming messages
-        socket.on('question', ({ roomId: receivedRoomId, msg }) => {
+        const handleQuestion = ({ roomId: receivedRoomId, msg }) => {
             if (receivedRoomId === roomId) {
                 setChat(prevChat => {
                     const newChat = [...prevChat, { role: 'asker', message: msg }];
@@ -24,9 +26,9 @@ const Chat = ({ roomId }) => {
                     return newChat;
                 });
             }
-        });
+        };
 
-        socket.on('response', ({ roomId: receivedRoomId, msg }) => {
+        const handleResponse = ({ roomId: receivedRoomId, msg }) => {
             if (receivedRoomId === roomId) {
                 setChat(prevChat => {
                     const newChat = [...prevChat, { role: 'responder', message: msg }];
@@ -34,16 +36,28 @@ const Chat = ({ roomId }) => {
                     return newChat;
                 });
             }
-        });
+        };
+
+        socket.on('question', handleQuestion);
+        socket.on('response', handleResponse);
 
         // Scroll to bottom on new message
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
 
         return () => {
-            socket.off('question');
-            socket.off('response');
+            socket.off('question', handleQuestion);
+            socket.off('response', handleResponse);
         };
     }, [roomId]);
+
+    const sendMessage = (e) => {
+        e.preventDefault();
+        if (message.trim()) {
+            const role = window.location.pathname.includes('/chat/') ? 'responder' : 'asker'; // Determine role based on route
+            socket.emit(role === 'responder' ? 'response' : 'question', { roomId, msg: message }); // Emit message to server based on role
+            setMessage('');
+        }
+    };
 
     return (
         <div className="chat-container">
@@ -60,12 +74,25 @@ const Chat = ({ roomId }) => {
                 ))}
                 <div ref={chatEndRef} />
             </div>
+            <form onSubmit={sendMessage} className="input-area">
+                <input
+                    type="text"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="Type your message..."
+                    className="chat-input"
+                />
+                <button type="submit" className="chat-button">
+                    <img className="send-icon" src="/arrow3.svg" alt="Send" />
+                </button>
+            </form>
         </div>
     );
 };
 
 const Responder = () => {
     const [rooms, setRooms] = useState({});
+    const [activeRooms, setActiveRooms] = useState({});
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -77,10 +104,29 @@ const Responder = () => {
                 return acc;
             }, {});
             setRooms(formattedRooms);
+            setActiveRooms(formattedRooms); // Initialize activeRooms with all rooms
         });
+
+        const handleQuestion = ({ roomId, msg }) => {
+            setActiveRooms((prevActive) => {
+                if (prevActive[roomId]) {
+                    // If room already exists in activeRooms, return it
+                    return prevActive;
+                } else {
+                    // Otherwise, add it as an active room
+                    return {
+                        ...prevActive,
+                        [roomId]: msg,
+                    };
+                }
+            });
+        };
+
+        socket.on('question', handleQuestion);
 
         return () => {
             socket.off('roomsList');
+            socket.off('question', handleQuestion);
         };
     }, []);
 
@@ -88,40 +134,37 @@ const Responder = () => {
         navigate(`/chat/${roomId}`); // Navigate to the chat room
     };
 
-    const sendResponse = (roomId, msg) => {
-        socket.emit('response', { roomId, msg });
+    const sendResponse = (roomId) => {
+        const responseMessage = 'This is a response!'; // Message to be sent from responder
+        socket.emit('response', { roomId, msg: responseMessage });
+        navigate(`/chat/${roomId}`); // Navigate to the chat room after sending response
     };
 
     return (
         <div className="responder-page">
             <h2>Responder Page</h2>
             <div className="messages">
-                {Object.keys(rooms).map((roomId) => (
-                    <div key={roomId} className="message" onClick={() => handleRoomClick(roomId)}>
-                        <div className="message-content">
-                            {rooms[roomId] ? rooms[roomId] : 'No messages yet'}
+                {Object.keys(activeRooms).length === 0 ? (
+                    <p>No active users at the moment.</p>
+                ) : (
+                    Object.keys(activeRooms).map((roomId) => (
+                        <div key={roomId} className="message" onClick={() => handleRoomClick(roomId)}>
+                            <div className="message-content">
+                                {activeRooms[roomId] ? activeRooms[roomId] : 'No messages yet'}
+                            </div>
+                            <button onClick={() => sendResponse(roomId)}>
+                                Respond
+                            </button>
                         </div>
-                        <button onClick={() => sendResponse(roomId, 'This is a response!')}>
-                            Respond
-                        </button>
-                    </div>
-                ))}
+                    ))
+                )}
             </div>
         </div>
     );
 };
 
 const App = () => {
-    const [message, setMessage] = useState('');
-    const roomId = getRoomIdForUser(); // Assign a unique room ID for the user
-
-    const sendMessage = (e) => {
-        e.preventDefault();
-        if (message.trim()) {
-            socket.emit('question', { roomId, msg: message });
-            setMessage('');
-        }
-    };
+    const roomId = getRoomIdForUser(); // Generate a unique room ID for each session
 
     return (
         <Router>
@@ -135,29 +178,12 @@ const App = () => {
                 </div>
                 <div className="chat-wrapper">
                     <Routes>
-                        <Route path="/" element={<Navigate to="/user" replace />} />
-                        <Route path="/user" element={<Chat roomId={roomId} />} />
+                        <Route path="/" element={<Navigate to={`/user/${roomId}`} replace />} />
+                        <Route path="/user/:roomId" element={<Chat />} />
                         <Route path="/responder" element={<Responder />} />
-                        <Route path="/chat/:roomId" element={<Chat roomId={roomId} />} /> {/* Use the chat room ID */}
-                        <Route path="*" element={<Navigate to="/user" replace />} />
+                        <Route path="/chat/:roomId" element={<Chat />} />
+                        <Route path="*" element={<Navigate to={`/user/${roomId}`} replace />} />
                     </Routes>
-                </div>
-                <div className="bottom-space">
-                    <form onSubmit={sendMessage} className="input-area">
-                        <input
-                            type="text"
-                            value={message}
-                            onChange={(e) => setMessage(e.target.value)}
-                            placeholder="Ask a question or type your response..."
-                            className="chat-input"
-                        />
-                        <button type="submit" className="chat-button">
-                            <img className="send-icon" src="/arrow3.svg" alt="" />
-                        </button>
-                    </form>
-                    <div style={{ marginTop: '10px', color: '#e0e0e0' }}>
-                        ChatGPT can make mistakes. Check important info.
-                    </div>
                 </div>
             </div>
         </Router>
@@ -166,9 +192,7 @@ const App = () => {
 
 // Function to assign a unique room ID for the user
 const getRoomIdForUser = () => {
-    const userId = localStorage.getItem('userId') || Math.random().toString(36).substr(2, 9);
-    localStorage.setItem('userId', userId); // Store user ID in localStorage
-    return `room-${userId}`;
+    return `room-${Math.random().toString(36).substr(2, 9)}`; // Generate a new unique room ID each time
 };
 
 export default App;
