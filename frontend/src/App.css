@@ -279,3 +279,62 @@ html, body {
   background-color: #444; /* Blue background for user messages */
   color: #fff; /* White text color */
 }
+
+/* Responder page styles */
+.responder-page {
+  padding: 20px; /* Padding for the responder page */
+  background-color: #212121; /* Match background with the app */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Slight shadow for depth */
+}
+
+.responder-title {
+  font-size: 24px; /* Title size */
+  margin-bottom: 20px; /* Space below title */
+  text-align: center; /* Center title */
+  color: #b4b4b4; /* Light title color */
+}
+
+.active-rooms {
+  max-height: 400px; /* Limit height for scrolling */
+  overflow-y: auto; /* Scroll if needed */
+  padding: 10px; /* Padding around the rooms list */
+  background-color: #2f2f2f; /* Background for active rooms */
+  border-radius: 8px; /* Rounded corners */
+}
+
+.room-item {
+  display: flex; /* Flexbox for alignment */
+  justify-content: space-between; /* Space between message and button */
+  align-items: center; /* Center vertically */
+  padding: 15px; /* Padding for each room item */
+  margin-bottom: 10px; /* Space below each room item */
+  background-color: #444; /* Background color for room items */
+  border-radius: 5px; /* Rounded edges */
+  transition: background-color 0.3s; /* Transition effect */
+  cursor: pointer; /* Pointer cursor */
+}
+
+.room-item:hover {
+  background-color: #555; /* Darken on hover */
+}
+
+.respond-button {
+  padding: 8px 12px; /* Padding for the respond button */
+  background-color: #007bff; /* Bootstrap primary color */
+  color: white; /* Text color */
+  border: none; /* No border */
+  border-radius: 5px; /* Rounded corners */
+  cursor: pointer; /* Pointer cursor */
+  transition: background-color 0.3s; /* Transition effect */
+}
+
+.respond-button:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+}
+
+.no-active-users {
+  text-align: center; /* Center text */
+  color: #e0e0e0; /* Light text color */
+  margin-top: 20px; /* Space above message */
+}

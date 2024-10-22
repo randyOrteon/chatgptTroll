@@ -142,17 +142,20 @@ const Responder = () => {
 
     return (
         <div className="responder-page">
-            <h2>Responder Page</h2>
-            <div className="messages">
+            <h2 className="responder-title">Responder Dashboard</h2>
+            <div className="active-rooms">
                 {Object.keys(activeRooms).length === 0 ? (
-                    <p>No active users at the moment.</p>
+                    <p className="no-active-users">No active users at the moment.</p>
                 ) : (
                     Object.keys(activeRooms).map((roomId) => (
-                        <div key={roomId} className="message" onClick={() => handleRoomClick(roomId)}>
+                        <div key={roomId} className="room-item" onClick={() => handleRoomClick(roomId)}>
                             <div className="message-content">
-                                {activeRooms[roomId] ? activeRooms[roomId] : 'No messages yet'}
+                                {activeRooms[roomId] || 'No messages yet'}
                             </div>
-                            <button onClick={() => sendResponse(roomId)}>
+                            <button className="respond-button" onClick={(e) => {
+                                e.stopPropagation(); // Prevent room click when clicking the button
+                                sendResponse(roomId);
+                            }}>
                                 Respond
                             </button>
                         </div>
