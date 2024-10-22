@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
 import './App.css';
 
 // Connect to the backend
@@ -66,6 +66,7 @@ const Chat = ({ roomId }) => {
 
 const Responder = () => {
     const [rooms, setRooms] = useState({});
+    const navigate = useNavigate();
 
     useEffect(() => {
         socket.emit('getRooms');
@@ -83,6 +84,10 @@ const Responder = () => {
         };
     }, []);
 
+    const handleRoomClick = (roomId) => {
+        navigate(`/chat/${roomId}`); // Navigate to the chat room
+    };
+
     const sendResponse = (roomId, msg) => {
         socket.emit('response', { roomId, msg });
     };
@@ -92,7 +97,7 @@ const Responder = () => {
             <h2>Responder Page</h2>
             <div className="messages">
                 {Object.keys(rooms).map((roomId) => (
-                    <div key={roomId} className="message">
+                    <div key={roomId} className="message" onClick={() => handleRoomClick(roomId)}>
                         <div className="message-content">
                             {rooms[roomId] ? rooms[roomId] : 'No messages yet'}
                         </div>
@@ -133,6 +138,7 @@ const App = () => {
                         <Route path="/" element={<Navigate to="/user" replace />} />
                         <Route path="/user" element={<Chat roomId={roomId} />} />
                         <Route path="/responder" element={<Responder />} />
+                        <Route path="/chat/:roomId" element={<Chat roomId={roomId} />} /> {/* Use the chat room ID */}
                         <Route path="*" element={<Navigate to="/user" replace />} />
                     </Routes>
                 </div>
