@@ -14,43 +14,45 @@ const io = socketIo(server, {
     }
 });
 
-// Middleware
+
 app.use(cors());
 
-// Store messages in memory (for demonstration purposes)
+
 let messages = {}; // This can be replaced with a database in a production app
 
-// Handle socket connection
+
 io.on('connection', (socket) => {
     console.log('New client connected:', socket.id);
 
-    // Handle getting chat messages for a specific room
+
+    socket.on('joinRoom', (roomId) => {
+        socket.join(roomId);
+        console.log(`Client ${socket.id} joined room ${roomId}`);
+    });
+
+
     socket.on('getMessages', (roomId) => {
         const roomMessages = messages[roomId] || [];
         socket.emit('chatHistory', roomMessages);
     });
 
-    // Handle incoming questions
     socket.on('question', (data) => {
         const { roomId, msg } = data;
-        console.log('Received question:', data); // Log received questions
-        // Save the message
         messages[roomId] = messages[roomId] || [];
         messages[roomId].push({ role: 'asker', message: msg });
-        socket.to(roomId).emit('question', { roomId, msg });
+        io.to(roomId).emit('question', { roomId, msg });
+        io.to(roomId).emit('chatHistory', messages[roomId]);
     });
 
     // Handle incoming responses
     socket.on('response', (data) => {
         const { roomId, msg } = data;
-        console.log('Received response:', data); // Log received responses
-        // Save the message
         messages[roomId] = messages[roomId] || [];
         messages[roomId].push({ role: 'responder', message: msg });
-        socket.to(roomId).emit('response', { roomId, msg });
+        io.to(roomId).emit('response', { roomId, msg });
+        io.to(roomId).emit('chatHistory', messages[roomId]);
     });
 
-    // Handle getting rooms (for the responder)
     socket.on('getRooms', () => {
         const roomsList = Object.keys(messages).map((roomId) => ({
             id: roomId,
@@ -59,7 +61,7 @@ io.on('connection', (socket) => {
         socket.emit('roomsList', roomsList);
     });
 
-    // Handle disconnection
+
     socket.on('disconnect', () => {
         console.log('Client disconnected:', socket.id);
     });

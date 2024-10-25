@@ -1,29 +1,38 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { io } from 'socket.io-client';
 import { BrowserRouter as Router, Route, Routes, Navigate, useParams, useNavigate } from 'react-router-dom';
+import { io } from 'socket.io-client';
 import './App.css';
 
-// Connect to the backend
-const socket = io('https://chatgptf.onrender.com');
+const socket = io('http://localhost:4000');
+
+// Log when the client connects
+socket.on('connect', () => {
+    console.log('Connected to Socket.IO server:', socket.id);
+        const roomId = window.location.pathname.split('/').pop(); 
+        socket.emit('joinRoom', roomId);
+});
+
+socket.on('disconnect', () => {
+    console.log('Disconnected from Socket.IO server');
+});
 
 const Chat = () => {
-    const { roomId } = useParams(); // Get roomId from URL parameters
+    const { roomId } = useParams();
     const [chat, setChat] = useState([]);
     const [message, setMessage] = useState('');
     const chatEndRef = useRef(null);
 
     useEffect(() => {
-        // Load chat history from server when the component mounts
         socket.emit('getMessages', roomId);
 
-        // Handle chat history from server
-        const handleChatHistory = (messages) => {
-            setChat(messages);
-            chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-        };
+      const handleChatHistory = (messages) => {
+        setChat(messages);
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
 
-        // Listener for incoming messages
+
         const handleQuestion = ({ roomId: receivedRoomId, msg }) => {
+            console.log('Received question:', msg);
             if (receivedRoomId === roomId) {
                 setChat((prevChat) => {
                     const newChat = [...prevChat, { role: 'asker', message: msg }];
@@ -32,8 +41,9 @@ const Chat = () => {
                 });
             }
         };
-    
+
         const handleResponse = ({ roomId: receivedRoomId, msg }) => {
+            console.log('Received response:', msg);
             if (receivedRoomId === roomId) {
                 setChat((prevChat) => {
                     const newChat = [...prevChat, { role: 'responder', message: msg }];
@@ -43,27 +53,24 @@ const Chat = () => {
             }
         };
 
-        // Register event listeners
         socket.on('chatHistory', handleChatHistory);
         socket.on('question', handleQuestion);
         socket.on('response', handleResponse);
 
-        // Cleanup function to remove event listeners
         return () => {
             socket.off('chatHistory', handleChatHistory);
             socket.off('question', handleQuestion);
             socket.off('response', handleResponse);
         };
-    }, [roomId]); // Update whenever roomId changes
+    }, [roomId]);
 
     const sendMessage = (e) => {
         e.preventDefault();
         if (message.trim()) {
-            const role = window.location.pathname.includes('/chat/') ? 'responder' : 'asker'; // Determine role based on route
-            socket.emit(role === 'responder' ? 'response' : 'question', { roomId, msg: message }); // Emit message to server based on role
-            setChat((prevChat) => [...prevChat, { role, message }]); // Optimistically update the chat state
-            setMessage(''); // Clear the input field
-            chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            const role = window.location.pathname.includes('/chat/') ? 'responder' : 'asker';
+            console.log(`Sending ${role} message: ${message}`);
+            socket.emit(role === 'responder' ? 'response' : 'question', { roomId, msg: message });
+            setMessage('');
         }
     };
 
@@ -102,35 +109,27 @@ const Chat = () => {
 };
 
 const Responder = () => {
-    const [rooms, setRooms] = useState({});
     const [activeRooms, setActiveRooms] = useState({});
     const navigate = useNavigate();
 
     useEffect(() => {
-        socket.emit('getRooms'); // Request the list of rooms
+        socket.emit('getRooms');
 
         socket.on('roomsList', (roomsList) => {
+            console.log('Received rooms list:', roomsList);
             const formattedRooms = roomsList.reduce((acc, room) => {
                 acc[room.id] = room.latestMessage;
                 return acc;
             }, {});
-            setRooms(formattedRooms);
-            setActiveRooms(formattedRooms); // Initialize activeRooms with all rooms
+            setActiveRooms(formattedRooms);
         });
 
         const handleQuestion = ({ roomId, msg }) => {
-            setActiveRooms((prevActive) => {
-                if (prevActive[roomId]) {
-                    // If room already exists in activeRooms, return it
-                    return prevActive;
-                } else {
-                    // Otherwise, add it as an active room
-                    return {
-                        ...prevActive,
-                        [roomId]: msg,
-                    };
-                }
-            });
+            console.log('Received question:', msg);
+            setActiveRooms((prevActive) => ({
+                ...prevActive,
+                [roomId]: msg, 
+            }));
         };
 
         socket.on('question', handleQuestion);
@@ -142,13 +141,14 @@ const Responder = () => {
     }, []);
 
     const handleRoomClick = (roomId) => {
-        navigate(`/chat/${roomId}`); // Navigate to the chat room
+        navigate(`/chat/${roomId}`); 
     };
 
     const sendResponse = (roomId) => {
-        const responseMessage = 'This is a response!'; // Message to be sent from responder
+        const responseMessage = 'This is a response!'; 
+        console.log(`Sending response message: ${responseMessage}`);
         socket.emit('response', { roomId, msg: responseMessage });
-        navigate(`/chat/${roomId}`); // Navigate to the chat room after sending response
+        navigate(`/chat/${roomId}`); 
     };
 
     return (
@@ -164,7 +164,7 @@ const Responder = () => {
                                 {activeRooms[roomId] || 'No messages yet'}
                             </div>
                             <button className="respond-button" onClick={(e) => {
-                                e.stopPropagation(); // Prevent room click when clicking the button
+                                e.stopPropagation(); 
                                 sendResponse(roomId);
                             }}>
                                 Respond
@@ -178,7 +178,7 @@ const Responder = () => {
 };
 
 const App = () => {
-    const roomId = getRoomIdForUser(); // Generate a unique room ID for each session
+    const roomId = getRoomIdForUser(); 
 
     return (
         <Router>
@@ -206,7 +206,7 @@ const App = () => {
 
 // Function to assign a unique room ID for the user
 const getRoomIdForUser = () => {
-    return `room-${Math.random().toString(36).substr(2, 9)}`; // Generate a new unique room ID each time
+    return `room-${Math.random().toString(36).substr(2, 9)}`; 
 };
 
 export default App;
