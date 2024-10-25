@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate, useParams, useNavigat
 import { io } from 'socket.io-client';
 import './App.css';
 
-const socket = io('http://localhost:4000');
+const socket = io('https://chatgpttroll.onrender.com');
 
 // Log when the client connects
 socket.on('connect', () => {
