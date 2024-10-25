@@ -25,17 +25,21 @@ const Chat = () => {
         // Listener for incoming messages
         const handleQuestion = ({ roomId: receivedRoomId, msg }) => {
             if (receivedRoomId === roomId) {
-                const newChat = [...chat, { role: 'asker', message: msg }];
-                setChat(newChat);
-                chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                setChat((prevChat) => {
+                    const newChat = [...prevChat, { role: 'asker', message: msg }];
+                    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                    return newChat;
+                });
             }
         };
-
+    
         const handleResponse = ({ roomId: receivedRoomId, msg }) => {
             if (receivedRoomId === roomId) {
-                const newChat = [...chat, { role: 'responder', message: msg }];
-                setChat(newChat);
-                chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                setChat((prevChat) => {
+                    const newChat = [...prevChat, { role: 'responder', message: msg }];
+                    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                    return newChat;
+                });
             }
         };
 
@@ -57,10 +61,9 @@ const Chat = () => {
         if (message.trim()) {
             const role = window.location.pathname.includes('/chat/') ? 'responder' : 'asker'; // Determine role based on route
             socket.emit(role === 'responder' ? 'response' : 'question', { roomId, msg: message }); // Emit message to server based on role
+            setChat((prevChat) => [...prevChat, { role, message }]); // Optimistically update the chat state
             setMessage(''); // Clear the input field
-            
-            // Reload the page after sending the message
-            window.location.reload();
+            chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         }
     };
 
