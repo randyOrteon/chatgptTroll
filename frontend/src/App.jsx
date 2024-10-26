@@ -98,7 +98,7 @@ const Chat = () => {
                     className="chat-input"
                 />
                 <button type="submit" className="chat-button">
-                    <img className="send-icon" src="/arrow3.svg" alt="Send" />
+                    <img className="send-icon" src="/arrow.png" alt="Send" />
                 </button>
             </form>
             <div className="footer-message">
@@ -185,10 +185,14 @@ const App = () => {
             <div className="app-container">
                 <div className="top-space">
                     <h1 className="app-title">ChatGPT</h1>
-                    <div className="header-buttons">
-                        <button className="share-button">Share</button>
+                    <div>
+                    <button className="share-button">Share</button>
+                    
                     </div>
-                    <img src="/accounthol.png" alt="Account" className="account-image" />
+                    
+                       
+                    
+                    
                 </div>
                 <div className="chat-wrapper">
                     <Routes>
