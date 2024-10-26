@@ -1,5 +1,7 @@
 to run locally----
 
+npm i first in both backend and frontend
+
 cd backend
 node server.js
 
