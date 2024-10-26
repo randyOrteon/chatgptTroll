@@ -1,216 +1,412 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate, useParams, useNavigate } from 'react-router-dom';
-import { io } from 'socket.io-client';
-import './App.css';
+import React, { useState, useEffect, useRef } from "react";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+  useParams,
+  useNavigate,
+} from "react-router-dom";
+import { io } from "socket.io-client";
+import { MessageSquare, ArrowUpIcon, User2Icon } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import toast, { Toaster } from "react-hot-toast";
+import chatgpt from '../src/assets/chatgpt.svg'
+import copy from '../src/assets/copy.svg'
+import like from '../src/assets/like.svg'
+import dislike from '../src/assets/dislike.svg'
+import share from '../src/assets/share.svg'
+import newchat from '../src/assets/newchat.svg'
 
-const socket = io('https://chatgpttroll.onrender.com');
+const socket = io("https://chatgpttroll.onrender.com");
 
-// Log when the client connects
-socket.on('connect', () => {
-    console.log('Connected to Socket.IO server:', socket.id);
-        const roomId = window.location.pathname.split('/').pop(); 
-        socket.emit('joinRoom', roomId);
+socket.on("connect", () => {
+  console.log("Connected to Socket.IO server:", socket.id);
+  const roomId = window.location.pathname.split("/").pop();
+  socket.emit("joinRoom", roomId);
 });
 
-socket.on('disconnect', () => {
-    console.log('Disconnected from Socket.IO server');
+socket.on("disconnect", () => {
+  console.log("Disconnected from Socket.IO server");
 });
 
 const Chat = () => {
-    const { roomId } = useParams();
-    const [chat, setChat] = useState([]);
-    const [message, setMessage] = useState('');
-    const chatEndRef = useRef(null);
+  const { roomId } = useParams();
+  const [chat, setChat] = useState([]);
+  const [message, setMessage] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const chatEndRef = useRef(null);
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        socket.emit('getMessages', roomId);
+  useEffect(() => {
+    socket.emit("getMessages", roomId);
 
-      const handleChatHistory = (messages) => {
-        setChat(messages);
-        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const handleChatHistory = (messages) => {
+      setChat(messages);
+      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
-
-        const handleQuestion = ({ roomId: receivedRoomId, msg }) => {
-            console.log('Received question:', msg);
-            if (receivedRoomId === roomId) {
-                setChat((prevChat) => {
-                    const newChat = [...prevChat, { role: 'asker', message: msg }];
-                    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-                    return newChat;
-                });
-            }
-        };
-
-        const handleResponse = ({ roomId: receivedRoomId, msg }) => {
-            console.log('Received response:', msg);
-            if (receivedRoomId === roomId) {
-                setChat((prevChat) => {
-                    const newChat = [...prevChat, { role: 'responder', message: msg }];
-                    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-                    return newChat;
-                });
-            }
-        };
-
-        socket.on('chatHistory', handleChatHistory);
-        socket.on('question', handleQuestion);
-        socket.on('response', handleResponse);
-
-        return () => {
-            socket.off('chatHistory', handleChatHistory);
-            socket.off('question', handleQuestion);
-            socket.off('response', handleResponse);
-        };
-    }, [roomId]);
-
-    const sendMessage = (e) => {
-        e.preventDefault();
-        if (message.trim()) {
-            const role = window.location.pathname.includes('/chat/') ? 'responder' : 'asker';
-            console.log(`Sending ${role} message: ${message}`);
-            socket.emit(role === 'responder' ? 'response' : 'question', { roomId, msg: message });
-            setMessage('');
-        }
+    const handleQuestion = ({ roomId: receivedRoomId, msg }) => {
+      if (receivedRoomId === roomId) {
+        setChat((prevChat) => {
+          const newChat = [...prevChat, { role: "asker", message: msg }];
+          chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+          return newChat;
+        });
+      }
     };
 
-    return (
-        <div className="chat-container">
-            <div className="chat-box">
-                {chat.map((msg, idx) => (
-                    <div key={idx} className={`chat-message ${msg.role}`}>
-                        {msg.role === 'responder' && (
-                            <img src="/gptlogog.jpg" alt="Responder Logo" className="responder-logo" />
-                        )}
-                        <div className={`${msg.role} message-content`}>
-                            {msg.message}
-                        </div>
-                    </div>
-                ))}
-                <div ref={chatEndRef} />
-            </div>
-            <form onSubmit={sendMessage} className="input-area">
-                <input
-                    type="text"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Type your message..."
-                    className="chat-input"
-                />
-                <button type="submit" className="chat-button">
-                    <img className="send-icon" src="/arrow.png" alt="Send" />
-                </button>
-            </form>
-            <div className="footer-message">
-                ChatGPT can make mistakes. Check important info.
-            </div>
+    const handleResponse = ({ roomId: receivedRoomId, msg }) => {
+      if (receivedRoomId === roomId) {
+        setChat((prevChat) => {
+          const newChat = [...prevChat, { role: "responder", message: msg }];
+          chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+          return newChat;
+        });
+      }
+    };
+
+    const handleRoomDeleted = ({ roomId }) => {
+      console.log(`Room ${roomId} has been deleted`);
+      toast.success(`Room ${roomId} has been deleted`);
+      navigate("/");
+    };
+
+    const handleTyping = () => {
+      setIsTyping(true);
+    };
+
+    const handleStopTyping = () => {
+      setIsTyping(false);
+    };
+
+    socket.on("chatHistory", handleChatHistory);
+    socket.on("question", handleQuestion);
+    socket.on("response", handleResponse);
+    socket.on("roomDeleted", handleRoomDeleted);
+    socket.on("typing", handleTyping);
+    socket.on("stopTyping", handleStopTyping);
+
+    return () => {
+      socket.off("chatHistory", handleChatHistory);
+      socket.off("question", handleQuestion);
+      socket.off("response", handleResponse);
+      socket.off("roomDeleted", handleRoomDeleted);
+      socket.off("typing", handleTyping);
+      socket.off("stopTyping", handleStopTyping);
+    };
+  }, [roomId]);
+
+  const sendMessage = (e) => {
+    e.preventDefault();
+    if (message.trim()) {
+      const role = window.location.pathname.includes("/chat/")
+        ? "responder"
+        : "asker";
+      socket.emit(role === "responder" ? "response" : "question", {
+        roomId,
+        msg: message,
+      });
+      setMessage("");
+      socket.emit("stopTyping", { roomId });
+    }
+  };
+
+  const handleInputChange = (e) => {
+    setMessage(e.target.value);
+    socket.emit("typing", { roomId });
+  };
+
+  const shareChat = () => {
+    const shareData = {
+        title: 'Chat',
+        text: 'Check out this chat!',
+        url: window.location.href,
+    };
+
+    if (navigator.share) {
+        navigator.share(shareData).catch(console.error);
+    } else {
+        // Fallback: Copy to clipboard
+        navigator.clipboard.writeText(shareData.url).then(() => {
+            toast.success("Link copied to clipboard!");
+        }).catch(err => {
+            toast.error("Could not copy text...");
+        });
+    }
+};
+
+const createNewChat = () => {
+  socket.emit("createRoom", (newRoomId) => {
+    navigate(`/chat/${newRoomId}`);
+  });
+};
+
+  return (
+    <div className="flex flex-col h-screen bg-white text-gray-800">
+      <header className="flex justify-between items-center p-4 border-b border-gray-200">
+        <div className="flex items-center gap-3">
+        <button
+          onClick={createNewChat}
+          className="p-2 rounded-md hover:bg-gray-100"
+        >
+          <img src={newchat} alt="Icon 3" className="h-6 w-6" />
+        </button>
+        <span className="font-semibold text-xl text-zinc-700">ChatGPT</span>
         </div>
-    );
+        <h1 className="text-xl font-semibold">New chat</h1>
+
+        <div className="flex items-center gap-6">
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            className="share-button p-2 bg-white text-black rounded-3xl px-4 border border-gray-300 flex items-center gap-2"
+            onClick={shareChat}
+          >
+            <img src={share} alt="share" className="h-5"  /> <span>Share</span>
+          </motion.button>
+          <div className="p-2 rounded-full bg-slate-200 group cursor-pointer"><User2Icon /></div>
+        </div>
+      </header>
+      <main className="w-9/12 mx-auto flex-1 overflow-auto p-4 space-y-6 hide-scrollbar scroll-smooth ">
+        <AnimatePresence>
+          {chat.map((msg, idx) => {
+            const isLastResponderMessage =
+              msg.role === "responder" &&
+              (idx === chat.length - 1 || chat[idx + 1].role !== "responder");
+            
+            return (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className={`flex items-center relative ${
+                  msg.role === "responder" ? "justify-start" : "justify-end"
+                }`}
+              >
+                {msg.role === 'responder' && (
+                  <div className="rounded-full mr-2 border border-slate-200 p-2"><img src={chatgpt} alt="Responder Logo" className="h-4 w-4 " /></div>
+                )}
+                <div
+                  className={`max-w-[70%] rounded-3xl px-5 py-2.5 ${msg.role === "responder" ? "text-left" : "text-right"} ${msg.role === 'asker' && 'bg-[#f4f4f4]'}`}
+                >
+                  {msg.message}
+                </div>
+
+                {isLastResponderMessage && (
+                  <div className="flex space-x-1 mt-2 absolute left-12 top-9">
+                    <div className="p-2 cursor-pointer hover:bg-gray-100 rounded-full"><img src={copy} alt="Icon 1" className="h-4 w-4" /></div>
+                    <div className="p-2 cursor-pointer hover:bg-gray-100 rounded-full"><img src={like} alt="Icon 2" className="h-4 w-4" /></div>
+                    <div className="p-2 cursor-pointer hover:bg-gray-100 rounded-full"><img src={dislike} alt="Icon 3" className="h-4 w-4" /></div>
+                  </div>
+                )}
+              </motion.div>
+            )
+          })}
+
+          {isTyping && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="flex justify-start"
+            >
+              <div className="max-w-3/4 p-3 rounded-lg bg-gray-100 text-gray-800 text-left">
+                <div className="flex items-center space-x-2">
+                  <div className="typing-dot bg-gray-400 rounded-full w-2 h-2 animate-bounce"></div>
+                  <div className="typing-dot bg-gray-400 rounded-full w-2 h-2 animate-bounce delay-700"></div>
+                  <div className="typing-dot bg-gray-400 rounded-full w-2 h-2 animate-bounce delay-1000"></div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <div ref={chatEndRef} />
+      </main>
+      <form onSubmit={sendMessage} className="p-4">
+        <div className="flex items-center w-7/12 mx-auto space-x-2 py-1 rounded-[33px] bg-[#f4f4f4] relative">
+          <input
+            type="text"
+            value={message}
+            onChange={handleInputChange}
+            placeholder="Type your message..."
+            className="flex-1 py-3 px-5 rounded-[33px] bg-[#f4f4f4] focus-within:outline-none placeholder:text-slate-600"
+          />
+          <button
+            type="submit"
+            className="p-2 rounded-full absolute right-2 bg-black text-white hover:bg-opacity-75"
+          >
+            <ArrowUpIcon size={22} fontWeight={900} />
+          </button>
+        </div>
+      </form>
+      <div className="text-center p-2 text-sm hidden md:block text-gray-500">
+        ChatGPT can make mistakes. Check important info.
+      </div>
+    </div>
+  );
 };
 
 const Responder = () => {
-    const [activeRooms, setActiveRooms] = useState({});
-    const navigate = useNavigate();
+  const [activeRooms, setActiveRooms] = useState({});
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        socket.emit('getRooms');
+  useEffect(() => {
+    socket.emit("getRooms");
 
-        socket.on('roomsList', (roomsList) => {
-            console.log('Received rooms list:', roomsList);
-            const formattedRooms = roomsList.reduce((acc, room) => {
-                acc[room.id] = room.latestMessage;
-                return acc;
-            }, {});
-            setActiveRooms(formattedRooms);
-        });
+    socket.on("roomsList", (roomsList) => {
+      console.log("Received rooms list:", roomsList);
+      const formattedRooms = roomsList.reduce((acc, room) => {
+        acc[room.id] = room.latestMessage;
+        return acc;
+      }, {});
+      setActiveRooms(formattedRooms);
+    });
 
-        const handleQuestion = ({ roomId, msg }) => {
-            console.log('Received question:', msg);
-            setActiveRooms((prevActive) => ({
-                ...prevActive,
-                [roomId]: msg, 
-            }));
-        };
-
-        socket.on('question', handleQuestion);
-
-        return () => {
-            socket.off('roomsList');
-            socket.off('question', handleQuestion);
-        };
-    }, []);
-
-    const handleRoomClick = (roomId) => {
-        navigate(`/chat/${roomId}`); 
+    const handleQuestion = ({ roomId, msg }) => {
+      console.log("Received question:", msg);
+      setActiveRooms((prevActive) => ({
+        ...prevActive,
+        [roomId]: msg,
+      }));
     };
 
-    const sendResponse = (roomId) => {
-        const responseMessage = 'This is a response!'; 
-        console.log(`Sending response message: ${responseMessage}`);
-        socket.emit('response', { roomId, msg: responseMessage });
-        navigate(`/chat/${roomId}`); 
-    };
+    socket.on("question", handleQuestion);
+    socket.on("getRooms", () => {
+      socket.emit("getRooms");
+    });
 
-    return (
-        <div className="responder-page">
-            <h2 className="responder-title">Responder Dashboard</h2>
-            <div className="active-rooms">
-                {Object.keys(activeRooms).length === 0 ? (
-                    <p className="no-active-users">No active users at the moment.</p>
-                ) : (
-                    Object.keys(activeRooms).map((roomId) => (
-                        <div key={roomId} className="room-item" onClick={() => handleRoomClick(roomId)}>
-                            <div className="message-content">
-                                {activeRooms[roomId] || 'No messages yet'}
-                            </div>
-                            <button className="respond-button" onClick={(e) => {
-                                e.stopPropagation(); 
-                                sendResponse(roomId);
-                            }}>
-                                Respond
-                            </button>
-                        </div>
-                    ))
-                )}
-            </div>
-        </div>
-    );
+    return () => {
+      socket.off("roomsList");
+      socket.off("question", handleQuestion);
+      socket.off("getRooms");
+    };
+  }, []);
+
+  const handleRoomClick = (roomId) => {
+    navigate(`/chat/${roomId}`);
+  };
+
+  const sendResponse = (roomId) => {
+    navigate(`/chat/${roomId}`);
+  };
+
+  const deleteRoom = (roomId) => {
+    console.log(`Deleting room from client: ${roomId}`);
+    socket.emit("deleteRoom", roomId);
+  };
+
+  return (
+    <div className="flex flex-col h-screen bg-white text-gray-800">
+      <header className="flex justify-between items-center p-4 border-b border-gray-200">
+        <h1 className="text-xl font-semibold">Responder Dashboard</h1>
+      </header>
+      <main className="flex-1 overflow-auto p-4 space-y-4">
+        <AnimatePresence>
+          {Object.keys(activeRooms).length === 0 ? (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="text-center text-gray-500"
+            >
+              No active users at the moment.
+            </motion.p>
+          ) : (
+            Object.keys(activeRooms).map((roomId) => (
+              <motion.div
+                key={roomId}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="p-4 rounded-lg cursor-pointer hover:bg-gray-100"
+                onClick={() => handleRoomClick(roomId)}
+              >
+                <div className="flex items-center justify-between w-11/12 mx-auto">
+                  <div className="flex items-center space-x-3">
+                    <MessageSquare size={24} className="text-[#6c71ff]" />
+                    <div>
+                      <h2 className="font-semibold">{roomId}</h2>
+                      <p className="text-sm text-gray-500">
+                        {activeRooms[roomId] || "No messages yet"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="px-3 py-1 rounded-md font-semibold bg-green-500 text-white hover:bg-green-600"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        sendResponse(roomId);
+                      }}
+                    >
+                      Respond
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="px-3 py-1 rounded-md bg-red-500 border-red-800 text-white font-semibold"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteRoom(roomId);
+                      }}
+                    
+                    >
+                      Delete
+                    </motion.button>
+                  </div>
+                </div>
+              </motion.div>
+            ))
+          )}
+        </AnimatePresence>
+      </main>
+    </div>
+  );
 };
 
 const App = () => {
-    const roomId = getRoomIdForUser(); 
+  const roomId = getRoomIdForUser();
 
-    return (
-        <Router>
-            <div className="app-container">
-                <div className="top-space">
-                    <h1 className="app-title">ChatGPT</h1>
-                    <div>
-                    <button className="share-button">Share</button>
-                    
-                    </div>
-                    
-                       
-                    
-                    
-                </div>
-                <div className="chat-wrapper">
-                    <Routes>
-                        <Route path="/" element={<Navigate to={`/user/${roomId}`} replace />} />
-                        <Route path="/user/:roomId" element={<Chat />} />
-                        <Route path="/responder" element={<Responder />} />
-                        <Route path="/chat/:roomId" element={<Chat />} />
-                        <Route path="*" element={<Navigate to={`/user/${roomId}`} replace />} />
-                    </Routes>
-                </div>
-            </div>
-        </Router>
-    );
+  return (
+    <Router>
+      <div className="app-container">
+        <Routes>
+          <Route
+            path="/"
+            element={<Navigate to={`/user/${roomId}`} replace />}
+          />
+          <Route
+            path="/user/:roomId"
+            element={<Chat />}
+          />
+          <Route
+            path="/responder"
+            element={<Responder />}
+          />
+          <Route
+            path="/chat/:roomId"
+            element={<Chat />}
+          />
+          <Route
+            path="*"
+            element={<Navigate to={`/user/${roomId}`} replace />}
+          />
+        </Routes>
+      </div>
+      <Toaster/>
+    </Router>
+  );
 };
 
-// Function to assign a unique room ID for the user
 const getRoomIdForUser = () => {
-    return `room-${Math.random().toString(36).substr(2, 9)}`; 
+  return `room-${Math.random().toString(36).substr(2, 9)}`;
 };
 
 export default App;
