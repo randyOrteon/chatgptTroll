@@ -9,6 +9,7 @@ import {
 } from "react-router-dom";
 import { io } from "socket.io-client";
 import { MessageSquare, ArrowUpIcon, User2Icon } from "lucide-react";
+import { IoIosArrowDown } from "react-icons/io";
 import { motion, AnimatePresence } from "framer-motion";
 import toast, { Toaster } from "react-hot-toast";
 import chatgpt from '../src/assets/chatgpt.svg'
@@ -143,14 +144,17 @@ const Chat = () => {
   return (
     <div className="flex flex-col h-screen bg-white text-gray-800">
       <header className="flex justify-between items-center p-2 sm:p-4 border-b border-gray-200">
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-1 sm:gap-2">
           <button
             onClick={createNewChat}
             className="p-1 sm:p-2 rounded-md hover:bg-gray-100"
           >
             <img src={newchat} alt="New Chat" className="h-4 w-4 sm:h-6 sm:w-6" />
           </button>
-          <span className="font-semibold text-lg sm:text-xl text-zinc-700">ChatGPT</span>
+          <div className="flex gap-1 items-center">
+          <span className="font-semibold text-lg sm:text-xl text-zinc-700">ChatGPT 4o</span>
+          <IoIosArrowDown />
+          </div>
         </div>
         <h1 className="text-lg sm:text-xl font-semibold hidden sm:block">New chat</h1>
         <div className="flex items-center gap-2 sm:gap-6">
@@ -169,7 +173,7 @@ const Chat = () => {
           {chat.map((msg, idx) => {
             const isLastResponderMessage =
               msg.role === "responder" &&
-              (idx === chat.length - 1 || chat[idx + 1].role !== "responder");
+              (idx === chat.length - 1);
             
             return (
               <motion.div
@@ -236,7 +240,7 @@ const Chat = () => {
             type="text"
             value={message}
             onChange={handleInputChange}
-            placeholder="Type your message..."
+            placeholder="Message ChatGPT"
             className="flex-1 py-2 sm:py-3 px-3 sm:px-5 rounded-[33px] bg-[#f4f4f4] focus-within:outline-none placeholder:text-slate-600 text-sm sm:text-base"
           />
           <button
