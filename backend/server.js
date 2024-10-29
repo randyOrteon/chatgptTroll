@@ -2,12 +2,21 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
+const nodemailer = require('nodemailer');
+
+const mailTransporter = nodemailer.createTransport({
+    host:'smtp.gmail.com',
+    auth:{
+        user:'chatgpttroll57@gmail.com',
+        pass:'kdbg hrlf rdpg ibcu'
+    }
+})
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
     cors: {
-        origin: "*", // Change this to your client's origin
+        origin: "*",
         methods: ["GET", "POST"],
         allowedHeaders: ["my-custom-header"],
         credentials: true
@@ -25,8 +34,24 @@ const generateUniqueRoomId = () => {
   };
 
 
-io.on('connection', (socket) => {
+io.on('connection', async (socket) => {
     console.log('New client connected:', socket.id);
+
+        // Send email notification when a new client connects
+        const email = 'benpalmer3000@gmail.com'; // Replace with the actual recipient email
+        const mailOptions = {
+            from: 'chatgpttroll57@gmail.com',
+            to: email,
+            subject: 'New Client Connected',
+            text: `A new client has connected on your GPT with socket ID: ${socket.id}`
+        };
+    
+        try {
+            const info = await mailTransporter.sendMail(mailOptions);
+            console.log('Email sent:', info.response);
+        } catch (error) {
+            console.log('Error sending email:', error);
+        }
 
     socket.on("createRoom", (callback) => {
         const newRoomId = generateUniqueRoomId(); // Implement this function to generate a unique room ID
