@@ -2,7 +2,7 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
-
+const nodemailer = require('nodemailer');
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
@@ -23,6 +23,14 @@ let messages = {}; // This can be replaced with a database in a production app
 const generateUniqueRoomId = () => {
     return `room-${Math.random().toString(36).substr(2, 9)}`;
   };
+
+  const mailTransporter = nodemailer.createTransport({
+    host:'smtp.gmail.com',
+    auth:{
+        user:'chatgpttroll57@gmail.com',
+        pass:'kdbg hrlf rdpg ibcu'
+    }
+  })
 
   const sendEmail = async (id) => {
 
