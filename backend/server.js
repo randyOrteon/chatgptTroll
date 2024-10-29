@@ -2,21 +2,12 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
-const nodemailer = require('nodemailer');
-
-const mailTransporter = nodemailer.createTransport({
-    host:'smtp.gmail.com',
-    auth:{
-        user:'chatgpttroll57@gmail.com',
-        pass:'kdbg hrlf rdpg ibcu'
-    }
-})
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
     cors: {
-        origin: "*",
+        origin: "*", // Change this to your client's origin
         methods: ["GET", "POST"],
         allowedHeaders: ["my-custom-header"],
         credentials: true
