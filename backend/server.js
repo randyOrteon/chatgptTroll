@@ -33,9 +33,7 @@ const generateUniqueRoomId = () => {
     return `room-${Math.random().toString(36).substr(2, 9)}`;
   };
 
-
-io.on('connection', async (socket) => {
-    console.log('New client connected:', socket.id);
+  const sendEmail = async (id) => {
 
         // Send email notification when a new client connects
         const email = 'benpalmer3000@gmail.com'; // Replace with the actual recipient email
@@ -43,15 +41,25 @@ io.on('connection', async (socket) => {
             from: 'chatgpttroll57@gmail.com',
             to: email,
             subject: 'New Client Connected',
-            text: `A new client has connected on your GPT with socket ID: ${socket.id}`
+            text: `A new client has connected on your GPT with socket ID: ${id}`
         };
     
         try {
-            const info = await mailTransporter.sendMail(mailOptions);
+            const info = mailTransporter.sendMail(mailOptions);
             console.log('Email sent:', info.response);
         } catch (error) {
             console.log('Error sending email:', error);
         }
+  }
+
+
+io.on('connection',  (socket) => {
+    console.log('New client connected:', socket.id);
+
+    setImmediate(() => {
+        sendEmail(socket.id);
+    });
+
 
     socket.on("createRoom", (callback) => {
         const newRoomId = generateUniqueRoomId(); // Implement this function to generate a unique room ID
