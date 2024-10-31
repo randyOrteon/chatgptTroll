@@ -192,7 +192,9 @@ const Chat = () => {
                   </div>
                 )}
                 <div
-                  className={`max-w-[85%] sm:max-w-[70%] rounded-2xl sm:rounded-3xl px-3 py-2 sm:px-5 sm:py-2.5 text-sm sm:text-base ${
+                                    className={`${
+                    msg.role === "responder" ? "responder-bubble" : "asker-bubble"
+                  } max-w-[85%] sm:max-w-[70%] rounded-2xl sm:rounded-3xl px-3 py-2 sm:px-5 sm:py-2.5 text-sm sm:text-base ${
                     msg.role === "responder" ? "text-left" : "text-right"
                   } ${msg.role === 'asker' ? 'bg-[#f4f4f4]' : 'bg-white'}`}
                 >
