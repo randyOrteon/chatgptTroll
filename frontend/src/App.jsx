@@ -12,14 +12,17 @@ import { MessageSquare, ArrowUpIcon, User2Icon, ArrowLeft } from "lucide-react";
 import { IoIosArrowDown } from "react-icons/io";
 import { motion, AnimatePresence } from "framer-motion";
 import toast, { Toaster } from "react-hot-toast";
+import "react-toastify/dist/ReactToastify.css";
+
 import responder from "../src/assets/chatgpt.svg"
 import copy from '../src/assets/copy.svg'
 import like from '../src/assets/like.svg'
 import dislike from '../src/assets/dislike.svg'
 import share from '../src/assets/share.svg'
 import newchat from '../src/assets/newchat.svg'
+import sound from './assets/sound.mp3'; // Adjusted import path
 
-const socket = io("https://chatgpttroll.onrender.com");
+const socket = io("http://localhost:4000/");
 
 socket.on("connect", () => {
   console.log("Connected to Socket.IO server:", socket.id);
@@ -40,7 +43,7 @@ const Chat = () => {
   useEffect(() => {
     socket.emit("joinRoom", roomId);
     socket.emit("getMessages", roomId);
-
+    socket.emit("userJoined", { roomId });
     const handleChatHistory = (messages) => {
       setChat(messages);
       chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -130,7 +133,7 @@ const Chat = () => {
     } else {
         navigator.clipboard.writeText(shareData.url).then(() => {
             toast.success("Link copied to clipboard!");
-        }).catch(err => {
+        }).catch((err) => {
             toast.error("Could not copy text...");
         });
     }
@@ -281,7 +284,14 @@ const Responder = () => {
 
   useEffect(() => {
     socket.emit("getRooms");
+  
+    // Notify the responder when a new user joins any room
+    socket.on("userJoined", ({ roomId }) => {
+      console.log(`User joined room: ${roomId}`);
+      toast.success(`A new user joined room: ${roomId}`);
 
+    });
+  
     socket.on("roomsList", (roomsList) => {
       console.log("Received rooms list:", roomsList);
       const formattedRooms = roomsList.reduce((acc, room) => {
@@ -290,7 +300,7 @@ const Responder = () => {
       }, {});
       setActiveRooms(formattedRooms);
     });
-
+  
     const handleQuestion = ({ roomId, msg }) => {
       console.log("Received question:", msg);
       setActiveRooms((prevActive) => ({
@@ -298,31 +308,32 @@ const Responder = () => {
         [roomId]: msg,
       }));
     };
-
+  
     const handleRoomDeleted = ({ roomId }) => {
-        console.log(`Room ${roomId} has been deleted`);
-        setActiveRooms((prevRooms) => {
-          const newRooms = { ...prevRooms };
-          delete newRooms[roomId];
-          return newRooms;
-        });
-        toast.success(`Room ${roomId} has been deleted`);
-      };
-
+      console.log(`Room ${roomId} has been deleted`);
+      setActiveRooms((prevRooms) => {
+        const newRooms = { ...prevRooms };
+        delete newRooms[roomId];
+        return newRooms;
+      });
+      toast.success(`Room ${roomId} has been deleted`);
+    };
+  
     socket.on("question", handleQuestion);
     socket.on("roomDeleted", handleRoomDeleted);
     socket.on("getRooms", () => {
       socket.emit("getRooms");
     });
-
+  
     return () => {
+      socket.off("userJoined");
       socket.off("roomsList");
       socket.off("roomDeleted", handleRoomDeleted);
       socket.off("question", handleQuestion);
       socket.off("getRooms");
     };
   }, []);
-
+  
   const handleRoomClick = (roomId) => {
     navigate(`/chat/${roomId}`);
   };
@@ -341,7 +352,7 @@ const Responder = () => {
       <header className="flex justify-between items-center p-2 sm:p-4 border-b border-gray-200">
         <h1 className="text-lg sm:text-xl font-semibold">Responder Dashboard</h1>
       </header>
-      <main  className="flex-1 overflow-auto p-2 sm:p-4 space-y-2 sm:space-y-4">
+      <main className="flex-1 overflow-auto p-2 sm:p-4 space-y-2 sm:space-y-4">
         <AnimatePresence>
           {Object.keys(activeRooms).length === 0 ? (
             <motion.p
@@ -407,6 +418,7 @@ const Responder = () => {
     </div>
   );
 };
+
 
 const App = () => {
   const roomId = getRoomIdForUser();
