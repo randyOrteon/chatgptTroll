@@ -282,18 +282,29 @@ const Responder = () => {
   const navigate = useNavigate();
 
   const playSuccessSound = () => {
-    const audio = new Audio('../public/success-sound.mp3'); // Path to your sound file
-    audio.play();
-  };
+    console.log('Attempting to play sound...');
+    const audio = new Audio('/soundgpt.wav');
+    
+    audio.play().then(() => {
+        console.log('Sound played successfully');
+    }).catch((error) => {
+        console.error('Error playing sound:', error);
+    });
+};
+  
 
   useEffect(() => {
     socket.emit("getRooms");
   
     // Notify the responder when a new user joins any room
     socket.on("userJoined", ({ roomId }) => {
+      playSuccessSound();
       console.log(`User joined room: ${roomId}`);
       toast.success(`A new user joined room: ${roomId}`, {
-        onOpen: playSuccessSound,  // Play sound when the toast opens
+        onOpen: () => {
+          console.log("Toast opened, playing sound...");
+          playSuccessSound();
+        },  // Play sound when the toast opens
       });
 
     });
