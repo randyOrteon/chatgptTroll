@@ -283,7 +283,7 @@ const Responder = () => {
 
   const playSuccessSound = () => {
     console.log('Attempting to play sound...');
-    const audio = new Audio('/soundgpt.wav');
+    const audio = new Audio('/soundrn.mp3');
     
     audio.play().then(() => {
         console.log('Sound played successfully');
