@@ -219,7 +219,7 @@ const Chat = () => {
                 </div>
                 <div className="p-1 sm:p-2 cursor-pointer hover:bg-gray-100 rounded-full">
                   <img src={dislike} alt="Dislike" className="h-3 w-3 sm:h-4 sm:w-4" />
-                </div>
+                </div> 
               </div>
             )}
           </motion.div>
