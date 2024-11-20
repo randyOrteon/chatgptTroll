@@ -86,8 +86,15 @@ const Chat = () => {
     socket.on("question", handleQuestion);
     socket.on("response", handleResponse);
     socket.on("roomDeleted", handleRoomDeleted);
-    socket.on("typing", handleTyping);
-    socket.on("stopTyping", handleStopTyping);
+    
+    socket.on("typing", ({ roomId: typingRoomId }) => {
+      if (typingRoomId === roomId) setIsTyping(true);
+    });
+    
+    socket.on("stopTyping", ({ roomId: typingRoomId }) => {
+      if (typingRoomId === roomId) setIsTyping(false);
+    });
+    
 
     return () => {
       socket.off("chatHistory", handleChatHistory);
