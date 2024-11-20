@@ -75,10 +75,13 @@ const Chat = () => {
     };
 
     const handleTyping = () => {
-      setIsTyping(true);
+      console.log("Typing...");
+      socket.emit("typing", { roomId });
+      setIsTyping(false);
     };
 
     const handleStopTyping = () => {
+      socket.emit("stopTyping", { roomId });
       setIsTyping(false);
     };
 
@@ -87,13 +90,8 @@ const Chat = () => {
     socket.on("response", handleResponse);
     socket.on("roomDeleted", handleRoomDeleted);
     
-    socket.on("typing", ({ roomId: typingRoomId }) => {
-      if (typingRoomId === roomId) setIsTyping(true);
-    });
-    
-    socket.on("stopTyping", ({ roomId: typingRoomId }) => {
-      if (typingRoomId === roomId) setIsTyping(false);
-    });
+    socket.on("typing", handleTyping);
+    socket.on("stopTyping", handleStopTyping);
     
 
     return () => {
@@ -121,11 +119,22 @@ const Chat = () => {
     }
   };
 
-  const handleInputChange = (e) => {
-    setMessage(e.target.value);
-    socket.emit("typing", { roomId });
-    autoResize(e.target);
-  };
+
+  // Emitting 'stopTyping' when user stops typing
+
+
+// Example: You could use a timeout to detect when the user stops typing
+let typingTimeout;
+const handleInputChange = (e) => {
+  setMessage(e.target.value);
+  socket.emit("typing", { roomId });
+  autoResize(e.target);
+
+  // Clear the previous timeout and set a new one
+  clearTimeout(typingTimeout);
+  typingTimeout = setTimeout(handleStopTyping, 1000); // Adjust the time for when to stop typing
+};
+  
 
   const shareChat = () => {
     const shareData = {
