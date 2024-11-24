@@ -3,12 +3,14 @@ const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
+const cloudinary = require('cloudinary').v2;
+require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
     cors: {
-        origin: "*", // Change this to your client's origin
+        origin: "*",
         methods: ["GET", "POST"],
         allowedHeaders: ["my-custom-header"],
         credentials: true
@@ -17,27 +19,30 @@ const io = socketIo(server, {
 
 app.use(cors());
 
-let messages = {}; // This can be replaced with a database in a production app
+cloudinary.config({
+    cloud_name: "dwdffshqd",
+    api_key: "158173115974515",
+    api_secret: "5ToDbwGd91ilrDSDYLCcFJaCe6Y"
+});
 
-// Helper function to generate a unique room ID
+let messages = {};
+
 const generateUniqueRoomId = () => {
     return `room-${Math.random().toString(36).substr(2, 9)}`;
 };
 
-// Nodemailer setup for sending email notifications
 const mailTransporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     auth: {
-        user: 'chatgpttroll57@gmail.com',
-        pass: 'kdbg hrlf rdpg ibcu'
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
     }
 });
 
-// Function to send email notification when a new client connects
 const sendEmail = async (id) => {
-    const email = 'benpalmer3000@gmail.com'; // Replace with the actual recipient email
+    const email = process.env.NOTIFICATION_EMAIL;
     const mailOptions = {
-        from: 'chatgpttroll57@gmail.com',
+        from: process.env.EMAIL_USER,
         to: email,
         subject: 'New Client Connected',
         text: `A new client has connected on your GPT with socket ID: ${id}`
@@ -54,62 +59,81 @@ const sendEmail = async (id) => {
 io.on('connection', (socket) => {
     console.log('New client connected:', socket.id);
 
-    // Send email when a client connects
     setImmediate(() => {
         sendEmail(socket.id);
     });
 
-    // Listen for the 'joinRoom' event and broadcast a 'userJoined' event
     socket.on('joinRoom', (roomId) => {
         socket.join(roomId);
         console.log(`Client ${socket.id} joined room ${roomId}`);
-
-        // Emit 'userJoined' event to all other clients except the one who joined
         socket.broadcast.emit('userJoined', { roomId });
-
-        // Emit a custom event to notify the responder page about the new user joining
         io.emit('userJoined', { roomId });
     });
 
-    // Create a new room and send the room ID back to the client
     socket.on("createRoom", (callback) => {
         const newRoomId = generateUniqueRoomId();
         callback(newRoomId);
     });
 
-    // Handle chat messages and responses
     socket.on('getMessages', (roomId) => {
         const roomMessages = messages[roomId] || [];
         socket.emit('chatHistory', roomMessages);
     });
 
-    socket.on('question', (data) => {
-        const { roomId, msg } = data;
+    socket.on('question', async (data) => {
+        const { roomId, msg, image } = data;
         messages[roomId] = messages[roomId] || [];
-        messages[roomId].push({ role: 'asker', message: msg });
-        io.to(roomId).emit('question', { roomId, msg });
+        
+        let imageUrl = null;
+        if (image) {
+            try {
+                const uploadResult = await cloudinary.uploader.upload(image, {
+                    folder: 'chat_images',
+                });
+                imageUrl = uploadResult.secure_url;
+            } catch (error) {
+                console.error('Error uploading image to Cloudinary:', error);
+            }
+        }
+        
+        const newMessage = { role: 'asker', message: msg, image: imageUrl };
+        messages[roomId].push(newMessage);
+        io.to(roomId).emit('question', newMessage);
         io.to(roomId).emit('chatHistory', messages[roomId]);
         io.emit('getRooms');
     });
 
-    socket.on('response', (data) => {
-        const { roomId, msg } = data;
+    socket.on('response', async (data) => {
+        const { roomId, msg, image } = data;
         messages[roomId] = messages[roomId] || [];
-        messages[roomId].push({ role: 'responder', message: msg });
-        io.to(roomId).emit('response', { roomId, msg });
+        
+        let imageUrl = null;
+        if (image) {
+            try {
+                const uploadResult = await cloudinary.uploader.upload(image, {
+                    folder: 'chat_images',
+                });
+                imageUrl = uploadResult.secure_url;
+            } catch (error) {
+                console.error('Error uploading image to Cloudinary:', error);
+            }
+        }
+        
+        const newMessage = { role: 'responder', message: msg, image: imageUrl };
+        messages[roomId].push(newMessage);
+        io.to(roomId).emit('response', newMessage);
         io.to(roomId).emit('chatHistory', messages[roomId]);
         io.emit('getRooms');
     });
 
     socket.on("typing", ({ roomId }) => {
         socket.to(roomId).emit("typing");
-      });
+    });
       
-      socket.on("stopTyping", ({ roomId }) => {
+    socket.on("stopTyping", ({ roomId }) => {
         socket.to(roomId).emit("stopTyping");
-      });
+    });
 
-    // Handle room deletion
     socket.on('deleteRoom', (roomId) => {
         console.log(`Received deleteRoom event for room: ${roomId}`);
         if (messages[roomId]) {
@@ -122,7 +146,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Handle getting all rooms
     socket.on('getRooms', () => {
         const roomsList = Object.keys(messages).map((roomId) => ({
             id: roomId,
@@ -132,13 +155,11 @@ io.on('connection', (socket) => {
         io.emit('roomsList', roomsList);
     });
 
-    // Handle client disconnection
     socket.on('disconnect', () => {
         console.log('Client disconnected:', socket.id);
     });
 });
 
-// Start the server
 const PORT = process.env.PORT || 4000;
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
